@@ -1,0 +1,20 @@
+{
+  "name": "restful-booker-tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Playwright + TypeScript test automation for Restful-Booker Platform. Personal portfolio project.",
+  "author": "Oleksandr",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.13.0",
+    "typescript": "^5.9.0"
+  }
+}
