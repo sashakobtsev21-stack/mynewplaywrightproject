@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "pino": "^9.5.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
@@ -37,7 +38,8 @@
     "@commitlint/cli": "^19.7.0",
     "@commitlint/config-conventional": "^19.7.0",
     "husky": "^9.1.6",
-    "lint-staged": "^15.4.0"
+    "lint-staged": "^15.4.0",
+    "pino-pretty": "^13.0.0"
   },
   "lint-staged": {
     "*.{ts,js}": [
