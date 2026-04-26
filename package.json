@@ -20,6 +20,10 @@
     "test:headed": "playwright test --headed",
     "report": "playwright show-report"
   },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "zod": "^3.24.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@types/node": "^22.13.0",
