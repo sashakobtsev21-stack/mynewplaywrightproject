@@ -1,8 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import 'dotenv/config';
-
-const isCi = !!process.env.CI;
-const baseURL = process.env.BASE_URL ?? 'https://automationintesting.online';
+import { env, isCi } from './src/config/env';
 
 export default defineConfig({
   testDir: './tests',
@@ -27,7 +24,7 @@ export default defineConfig({
       ],
 
   use: {
-    baseURL,
+    baseURL: env.BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -66,7 +63,7 @@ export default defineConfig({
       name: 'api',
       testMatch: ['**/api/**/*.spec.ts', '**/regression/api/**/*.spec.ts'],
       use: {
-        baseURL,
+        baseURL: env.BASE_URL,
       },
     },
   ],
