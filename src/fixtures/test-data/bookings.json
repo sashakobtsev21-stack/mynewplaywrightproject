@@ -1,0 +1,17 @@
+{
+  "knownRoomIds": [1, 2, 3],
+  "samplePayloads": {
+    "minimal": {
+      "roomid": 1,
+      "firstname": "Test",
+      "lastname": "Booker",
+      "email": "[email protected]",
+      "phone": "11111111111",
+      "depositpaid": true,
+      "bookingdates": {
+        "checkin": "2099-01-01",
+        "checkout": "2099-01-05"
+      }
+    }
+  }
+}

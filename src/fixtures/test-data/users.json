@@ -1,0 +1,24 @@
+{
+  "invalidLogins": [
+    {
+      "case": "right user, wrong password",
+      "username": "admin",
+      "password": "definitely-not-the-password"
+    },
+    {
+      "case": "wrong user, right password",
+      "username": "not-admin",
+      "password": "password"
+    },
+    {
+      "case": "empty username",
+      "username": "",
+      "password": "password"
+    },
+    {
+      "case": "empty password",
+      "username": "admin",
+      "password": ""
+    }
+  ]
+}
