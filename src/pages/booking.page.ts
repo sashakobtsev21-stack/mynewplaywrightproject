@@ -34,9 +34,7 @@ export class BookingPage extends BasePage {
     this.checkInInput = page.locator('input[name="checkin"], [data-testid="checkin"]').first();
     this.checkOutInput = page.locator('input[name="checkout"], [data-testid="checkout"]').first();
 
-    // Picks up the first "Book" button on the page. Works on a fresh load,
-    // but breaks once more than one matching button is visible (per-room cards).
-    this.bookButton = page.getByRole('button', { name: /book/i }).first();
+    this.bookButton = page.getByRole('button', { name: /^book$/i }).last();
     this.cancelButton = page.getByRole('button', { name: /cancel/i });
 
     this.confirmation = page.locator('.booking-confirmation, .alert-success').first();
