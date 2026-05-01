@@ -4,6 +4,9 @@ import users from '../../../src/fixtures/test-data/users.json';
 test.describe('admin login', () => {
   test.beforeEach(async ({ adminLoginPage }) => {
     await adminLoginPage.open();
+    // Form is rendered after a brief delay on first paint. Wait for the username
+    // field to attach so the parameterised loop below doesn't race the render.
+    await adminLoginPage.usernameInput.waitFor({ state: 'visible' });
   });
 
   test('valid credentials log the admin in', async ({ adminLoginPage }) => {
