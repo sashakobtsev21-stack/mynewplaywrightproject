@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RoomListResponse",
+  "type": "object",
+  "required": ["rooms"],
+  "properties": {
+    "rooms": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["roomid", "roomName", "type", "accessible", "roomPrice"],
+        "properties": {
+          "roomid": { "type": "number" },
+          "roomName": { "type": "string" },
+          "type": { "type": "string" },
+          "accessible": { "type": "boolean" },
+          "roomPrice": { "type": "number" }
+        }
+      }
+    }
+  }
+}
