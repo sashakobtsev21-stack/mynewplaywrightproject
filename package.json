@@ -21,7 +21,8 @@
     "report": "playwright show-report",
     "test:ui": "playwright test --project=chromium tests/regression/ui",
     "test:api": "playwright test --project=api",
-    "test:contracts": "playwright test --project=api tests/api/contracts"
+    "test:contracts": "playwright test --project=api tests/api/contracts",
+    "test:negative": "playwright test tests/negative"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
