@@ -23,7 +23,9 @@
     "test:api": "playwright test --project=api",
     "test:contracts": "playwright test --project=api tests/api/contracts",
     "test:negative": "playwright test tests/negative",
-    "test:perf": "playwright test --grep @perf"
+    "test:perf": "playwright test --grep @perf",
+    "test:visual": "playwright test --project=chromium tests/visual",
+    "test:visual:update": "playwright test --project=chromium tests/visual --update-snapshots"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
