@@ -1,0 +1,23 @@
+node_modules
+test-results
+playwright-report
+allure-results
+allure-report
+performance-results
+
+.git
+.github
+.husky
+.vscode
+.idea
+
+.env
+.env.local
+*.local
+
+ai-analysis
+cache
+tests/_generated
+dist
+
+# README isn't needed inside the container but small; keep for now
