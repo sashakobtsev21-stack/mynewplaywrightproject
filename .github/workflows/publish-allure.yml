@@ -1,0 +1,61 @@
+name: publish-allure
+
+# Triggered after tests / nightly complete on main. Also can run on-demand.
+on:
+  workflow_run:
+    workflows: [tests, nightly]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Native download-artifact does not see other workflow runs.
+      # dawidd6/* is the de facto solution; happy to switch if Actions ever fixes this.
+      - name: Download Allure artifacts from triggering run
+        if: github.event_name == 'workflow_run'
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          run_id: ${{ github.event.workflow_run.id }}
+          name: .*-allure$
+          name_is_regexp: true
+          path: artifacts
+          if_no_artifact_found: warn
+
+      - name: Merge all Allure result folders
+        run: |
+          mkdir -p allure-results
+          # Each artifact unpacks into its own folder under artifacts/<name>/
+          if [ -d artifacts ]; then
+            find artifacts -mindepth 1 -maxdepth 1 -type d -exec sh -c 'cp -r "$1"/. allure-results/' _ {} \;
+          fi
+          echo "Result files:"
+          ls -la allure-results | head -n 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Allure CLI
+        run: npm i -g allure-commandline@2.32.0
+
+      - name: Generate report
+        run: allure generate ./allure-results -o ./allure-report --clean
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: 'docs(allure): update report from ${{ github.event.workflow_run.head_sha || github.sha }}'
