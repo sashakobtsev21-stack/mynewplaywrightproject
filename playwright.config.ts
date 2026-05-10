@@ -17,10 +17,12 @@ export default defineConfig({
         ['list'],
         ['html', { open: 'never' }],
         ['junit', { outputFile: 'test-results/junit.xml' }],
+        ['allure-playwright', { detail: false, outputFolder: 'allure-results', suiteTitle: false }],
       ]
     : [
         ['list'],
         ['html', { open: 'never' }],
+        ['allure-playwright', { detail: true, outputFolder: 'allure-results' }],
       ],
 
   use: {
