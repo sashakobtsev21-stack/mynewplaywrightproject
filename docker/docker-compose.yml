@@ -1,0 +1,31 @@
+services:
+  tests:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      TEST_ENV: ${TEST_ENV:-public}
+      BASE_URL: ${BASE_URL:-https://automationintesting.online}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-password}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      CI: '1'
+    volumes:
+      # Surface reports/artifacts on the host
+      - ../test-results:/app/test-results
+      - ../allure-results:/app/allure-results
+      - ../playwright-report:/app/playwright-report
+    # Default command runs the full chromium suite. Override with:
+    #   docker compose -f docker/docker-compose.yml run --rm tests npm run test:smoke
+    command: npx playwright test --project=chromium
+# ──────────────────────────────────────────────────────────────────────────────
+# Local Restful-Booker Platform setup
+# ──────────────────────────────────────────────────────────────────────────────
+# The platform itself is a multi-service Spring app. I deliberately do NOT
+# duplicate their compose here — it's 6+ services and they evolve it upstream.
+#
+# To run tests against a local instance:
+#   1. Clone https://github.com/mwinteringham/restful-booker-platform
+#   2. Follow their README to bring it up (mvn or docker)
+#   3. Set in your .env:   TEST_ENV=local   BASE_URL=http://host.docker.internal:8080
+#   4. docker compose -f docker/docker-compose.yml up tests
