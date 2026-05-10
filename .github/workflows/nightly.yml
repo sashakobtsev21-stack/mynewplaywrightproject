@@ -1,0 +1,74 @@
+name: nightly
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # daily at 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  full:
+    name: full matrix (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit, mobile-chrome, mobile-safari, api]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-pw-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright
+        if: matrix.project != 'api'
+        run: npx playwright install --with-deps
+
+      - name: Run full suite
+        run: npx playwright test --project=${{ matrix.project }}
+        env:
+          CI: '1'
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME || 'admin' }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD || 'password' }}
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ matrix.project }}-allure
+          path: allure-results
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload debug bundle on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ matrix.project }}-debug
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # TODO: notify on failure. Wanted Telegram via apidirect but ran out of
+  # weekend — Slack webhook is the most likely first cut. Leaving for later.
+  # notify:
+  #   needs: full
+  #   if: failure()
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Slack notify
+  #       uses: slackapi/slack-github-action@v1
+  #       with:
+  #         payload: '{"text":"Nightly run failed: ${{ github.run_id }}"}'
+  #       env:
+  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
