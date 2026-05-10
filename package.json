@@ -25,7 +25,9 @@
     "test:negative": "playwright test tests/negative",
     "test:perf": "playwright test --grep @perf",
     "test:visual": "playwright test --project=chromium tests/visual",
-    "test:visual:update": "playwright test --project=chromium tests/visual --update-snapshots"
+    "test:visual:update": "playwright test --project=chromium tests/visual --update-snapshots",
+    "allure:generate": "bash scripts/publish-allure.sh",
+    "allure:serve": "SERVE=1 bash scripts/publish-allure.sh"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
