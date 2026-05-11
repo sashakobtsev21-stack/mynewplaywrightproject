@@ -27,7 +27,9 @@
     "test:visual": "playwright test --project=chromium tests/visual",
     "test:visual:update": "playwright test --project=chromium tests/visual --update-snapshots",
     "allure:generate": "bash scripts/publish-allure.sh",
-    "allure:serve": "SERVE=1 bash scripts/publish-allure.sh"
+    "allure:serve": "SERVE=1 bash scripts/publish-allure.sh",
+    "ai:generate-test": "tsx scripts/generate-test.ts",
+    "ai:analyze": "tsx scripts/analyze-failure.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
@@ -35,7 +37,8 @@
     "pino": "^9.5.0",
     "@faker-js/faker": "^9.4.0",
     "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "@anthropic-ai/sdk": "^0.39.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
@@ -52,7 +55,8 @@
     "husky": "^9.1.6",
     "lint-staged": "^15.4.0",
     "pino-pretty": "^13.0.0",
-    "allure-playwright": "^3.1.0"
+    "allure-playwright": "^3.1.0",
+    "tsx": "^4.19.2"
   },
   "lint-staged": {
     "*.{ts,js}": [
