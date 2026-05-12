@@ -1,0 +1,117 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import type Anthropic from '@anthropic-ai/sdk';
+import { aiLogger, extractText, getClient, isAiEnabled, MODEL } from './anthropic-client';
+
+const OUT_DIR = 'ai-analysis';
+
+export interface FailureContext {
+  testDir: string;
+  errorContextMd?: string;
+  screenshotPath?: string;
+  specSource?: string;
+  specPath?: string;
+}
+
+/**
+ * Collect what's useful from a Playwright test-results/<test>/ folder.
+ *
+ * NOTE: trace.zip would need yauzl/adm-zip to parse properly. For now we work
+ * off error-context.md and the failure screenshot, which Playwright extracts
+ * automatically. Good enough for a first cut.
+ */
+export function collectFailureContext(testDir: string): FailureContext {
+  const errorContextMd = readIfExists(path.join(testDir, 'error-context.md'));
+  const screenshotPath = pickScreenshot(testDir);
+
+  return { testDir, errorContextMd, screenshotPath };
+}
+
+export function attachSpecSource(ctx: FailureContext, specPath: string): FailureContext {
+  return { ...ctx, specPath, specSource: readIfExists(specPath, 6000) };
+}
+
+function pickScreenshot(dir: string): string | undefined {
+  if (!fs.existsSync(dir)) return undefined;
+  const candidates = fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.png'))
+    // test-failed-N.png is the canonical Playwright failure screenshot
+    .sort((a, b) => (a.includes('failed') ? -1 : b.includes('failed') ? 1 : 0));
+  return candidates.length > 0 ? path.join(dir, candidates[0]) : undefined;
+}
+
+function readIfExists(p: string, limit = 8000): string | undefined {
+  if (!fs.existsSync(p)) return undefined;
+  return fs.readFileSync(p, 'utf8').slice(0, limit);
+}
+
+export async function analyze(ctx: FailureContext): Promise<string> {
+  if (!isAiEnabled()) {
+    return formatLocalAnalysis(ctx);
+  }
+
+  const client = getClient();
+  const userContent: Anthropic.ContentBlockParam[] = [{ type: 'text', text: buildPrompt(ctx) }];
+
+  if (ctx.screenshotPath && fs.existsSync(ctx.screenshotPath)) {
+    const data = fs.readFileSync(ctx.screenshotPath).toString('base64');
+    userContent.push({
+      type: 'image',
+      source: { type: 'base64', media_type: 'image/png', data },
+    });
+  }
+
+  aiLogger.info({ dir: ctx.testDir, hasScreenshot: !!ctx.screenshotPath }, 'analyzing failure');
+
+  const resp = await client.messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    messages: [{ role: 'user', content: userContent }],
+  });
+  return extractText(resp.content);
+}
+
+function buildPrompt(ctx: FailureContext): string {
+  return `You are a Senior QA Automation Engineer debugging a Playwright test failure.
+
+Failed test folder: ${ctx.testDir}
+
+Error context (DOM snapshot Playwright captured at the moment of failure):
+${ctx.errorContextMd ?? '<error-context.md not found>'}
+
+Spec source:
+${ctx.specSource ?? '<spec source not provided>'}
+
+[A screenshot of the page at failure may be attached.]
+
+Provide a concise markdown response with:
+1. **Most likely root cause** — 1-2 sentences.
+2. **Next steps** — 2-3 concrete actions to confirm/fix.
+
+Be direct. No fluff. No restating the obvious.`;
+}
+
+function formatLocalAnalysis(ctx: FailureContext): string {
+  return [
+    '# AI disabled — local heuristics only',
+    '',
+    `**Folder:** ${ctx.testDir}`,
+    `**Screenshot:** ${ctx.screenshotPath ?? '<not found>'}`,
+    '',
+    '## error-context.md',
+    '',
+    '```',
+    ctx.errorContextMd ?? '<not found>',
+    '```',
+    '',
+    '_Set `ANTHROPIC_API_KEY` and re-run for an actual analysis._',
+  ].join('\n');
+}
+
+export function saveAnalysis(content: string, slug: string): string {
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  const file = path.join(OUT_DIR, `${Date.now()}-${slug}.md`);
+  fs.writeFileSync(file, content, 'utf8');
+  return file;
+}
