@@ -72,9 +72,14 @@ function writeCache(key: string, data: unknown): void {
 }
 
 function parseJsonArray(text: string): unknown[] {
-  const parsed = JSON.parse(text.trim());
+  // Tolerate stray code fences if the model ignores instructions
+  const cleaned = text
+    .replace(/^```(?:json)?\s*\n?/i, '')
+    .replace(/\n?```\s*$/i, '')
+    .trim();
+  const parsed = JSON.parse(cleaned);
   if (!Array.isArray(parsed)) {
-    throw new Error(`Expected JSON array, got: ${text.slice(0, 120)}`);
+    throw new Error(`Expected JSON array, got: ${cleaned.slice(0, 120)}`);
   }
   return parsed;
 }
