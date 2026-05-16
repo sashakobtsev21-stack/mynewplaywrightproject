@@ -12,6 +12,19 @@ No public releases yet — everything is pre-1.0.
 - Slack/Telegram nightly failure notifications
 - Performance trending dashboard from `performance-results/*.jsonl`
 
+## [0.7.0] — Week 4, end
+
+### Added
+- Full bilingual README (EN + RU sections).
+- `docs/architecture.md` with a Mermaid diagram of the layers.
+- `docs/ai-features.md` — usage, prompts, fallbacks, costs.
+- `docs/ci-cd.md` — workflow flow + one-time GH Pages setup.
+- Issue templates (`bug_report.md`, `flaky_test.md`) and a PR template.
+- `CHANGELOG.md` (this file).
+
+### Changed
+- Tidied a few comments after a re-read. No behaviour changes.
+
 ## [0.6.0] — Week 4
 
 ### Added
