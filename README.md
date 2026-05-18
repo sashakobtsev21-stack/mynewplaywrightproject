@@ -16,8 +16,6 @@
 
 [English](#english) · [Русская версия](#русская-версия)
 
-> Replace `sashakobtsev21-stack` in the badges/links above with your GitHub handle.
-
 ---
 
 ## English
