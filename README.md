@@ -239,9 +239,7 @@ Honest backlog, in rough priority order:
 
 If you spotted something off, or just want to chat about QA tooling:
 
-- Email: <oleksandr@example.com> *(replace with real)*
-- LinkedIn: [linkedin.com/in/sashakobtsev21-stack](https://www.linkedin.com/in/sashakobtsev21-stack) *(replace)*
-- Telegram: `@sashakobtsev21-stack` *(replace)*
+- Email: sashakobtsev21@gmail.com
 
 License: [MIT](LICENSE).
 
@@ -473,8 +471,6 @@ npm run allure:serve         # сгенерить и открыть Allure ло�
 
 Заметил что-то странное или хочется пообсуждать QA-инструменты:
 
-- Email: <oleksandr@example.com> *(подставить настоящий)*
-- LinkedIn: [linkedin.com/in/sashakobtsev21-stack](https://www.linkedin.com/in/sashakobtsev21-stack) *(подставить)*
-- Telegram: `@sashakobtsev21-stack` *(подставить)*
+- Email: sashakobtsev21@gmail.com
 
 Лицензия: [MIT](LICENSE).
