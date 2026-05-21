@@ -125,12 +125,12 @@ Roughly 70 tests, organised by purpose so the CI matrix maps cleanly onto folder
 | Folder | What it does | Count |
 | --- | --- | --- |
 | `tests/smoke/` | Quick sanity on home, admin login, API health. Runs on every PR before regression. | 8 |
-| `tests/regression/ui/` | Full booking flow, contact form, admin login, navigation. | 16 |
+| `tests/regression/ui/` | Full booking flow, contact form, admin login, navigation. | 13 |
 | `tests/regression/api/` | Auth + booking CRUD (serial) + list filtering. | 13 |
-| `tests/negative/` | Bad payloads, missing fields, malformed dates, XSS sanity, unicode, etc. | 18 |
+| `tests/negative/` | Bad payloads, missing fields, malformed dates, XSS sanity, unicode, etc. | 16 |
 | `tests/performance/` | Navigation timings, FCP, LCP, API response time. Results dumped to JSONL. | 4 |
 | `tests/visual/` | Pixel-diff snapshots of home, admin, booking form. Masks volatile bits. | 7 |
-| `tests/api/contracts/` | AJV-validated JSON Schema checks on auth / room / booking responses. | 5 |
+| `tests/api/contracts/` | AJV-validated JSON Schema checks on auth / room / booking responses. | 7 |
 
 ### AI features
 
@@ -355,12 +355,12 @@ npm run allure:serve         # сгенерить и открыть Allure ло�
 | Папка | Что | Кол-во |
 | --- | --- | --- |
 | `tests/smoke/` | Базовая проверка главной, админ-логина, API health. Гонится на каждый PR до regression. | 8 |
-| `tests/regression/ui/` | Полный флоу бронирования, форма обратной связи, админ-логин, навигация. | 16 |
+| `tests/regression/ui/` | Полный флоу бронирования, форма обратной связи, админ-логин, навигация. | 13 |
 | `tests/regression/api/` | Auth + booking CRUD (serial) + фильтрация списка. | 13 |
-| `tests/negative/` | Невалидные payload, пропущенные поля, нелогичные даты, XSS-санити, unicode и т.п. | 18 |
+| `tests/negative/` | Невалидные payload, пропущенные поля, нелогичные даты, XSS-санити, unicode и т.п. | 16 |
 | `tests/performance/` | Тайминги навигации, FCP, LCP, время ответа API. Результаты — в JSONL. | 4 |
 | `tests/visual/` | Пиксельные снапшоты главной, админки, формы. С масками на динамику. | 7 |
-| `tests/api/contracts/` | AJV-валидация ответов auth / room / booking по JSON Schema. | 5 |
+| `tests/api/contracts/` | AJV-валидация ответов auth / room / booking по JSON Schema. | 7 |
 
 ### AI-фичи
 
