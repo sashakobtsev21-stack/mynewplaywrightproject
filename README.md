@@ -37,7 +37,7 @@ the domain.
 
 ### Tech stack — and why
 
-| Tool | Why it |
+| Tool | Why |
 | --- | --- |
 | **Playwright + TypeScript** | Best multi-browser support out of the box, first-class API testing via `APIRequestContext`, real trace viewer, types help a lot when refactoring. |
 | **Page Object Model** | Every project I've seen that started with "let's just use helpers" ended up with a 2000-line `utils.ts`. POM forces a per-page boundary. |
