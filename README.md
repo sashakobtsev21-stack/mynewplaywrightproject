@@ -168,8 +168,10 @@ Full flow + one-time repo setup for GitHub Pages: **[docs/ci-cd.md](docs/ci-cd.m
 ### Reports
 
 - **Allure** (the main one) — deployed to GitHub Pages by `publish-allure.yml`.
-  Once you've run the suite locally (`npm test`) you can also generate it on
-  your machine: `npm run allure:serve` (needs Java 17+).
+  Refreshed automatically after every successful run of `tests.yml` (push to
+  `main`) or a manually-triggered `nightly.yml`. Once you've run the suite
+  locally (`npm test`) you can also generate it on your machine:
+  `npm run allure:serve` (needs Java 17+).
 - **Playwright HTML report** — always written to `playwright-report/` after
   a run. `npm run report` opens it.
 - **JUnit XML** — emitted in CI for whatever downstream tooling expects it.
@@ -399,8 +401,9 @@ npm run allure:serve         # сгенерить и открыть Allure ло�
 ### Отчёты
 
 - **Allure** (основной) — деплоится на GitHub Pages воркфлоу `publish-allure.yml`.
-  Локально после прогона (`npm test`) тоже можно: `npm run allure:serve`
-  (нужен Java 17+).
+  Перегенерируется автоматически после каждого успешного прогона `tests.yml`
+  (push в `main`) или ручного запуска `nightly.yml`. Локально после прогона
+  (`npm test`) тоже можно: `npm run allure:serve` (нужен Java 17+).
 - **Playwright HTML report** — всегда пишется в `playwright-report/` после
   прогона. `npm run report` его открывает.
 - **JUnit XML** — пишется в CI для всего, что его ждёт.
