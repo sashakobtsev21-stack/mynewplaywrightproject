@@ -41,7 +41,7 @@
     "@anthropic-ai/sdk": "^0.40.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "^1.55.1",
     "@types/node": "^22.13.1",
     "typescript": "^5.9.2",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
