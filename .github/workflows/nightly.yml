@@ -1,8 +1,12 @@
 name: nightly
 
 on:
-  schedule:
-    - cron: '0 2 * * *' # daily at 02:00 UTC
+  # Daily cron disabled for now: the public demo at automationintesting.online
+  # is occasionally down at night and was generating noisy failure emails.
+  # Run manually via "Run workflow" when needed, or re-enable once
+  # I either pin a local SUT or add retry/skip handling for SUT outages.
+  # schedule:
+  #   - cron: '0 2 * * *' # daily at 02:00 UTC
   workflow_dispatch:
 
 jobs:

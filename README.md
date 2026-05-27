@@ -1,9 +1,9 @@
-# 🏨 Restful-Booker Platform — Test Automation
+# Restful-Booker Platform — Test Automation
 
 [![tests](https://github.com/sashakobtsev21-stack/restful-booker-tests/actions/workflows/tests.yml/badge.svg)](https://github.com/sashakobtsev21-stack/restful-booker-tests/actions/workflows/tests.yml)
 [![nightly](https://github.com/sashakobtsev21-stack/restful-booker-tests/actions/workflows/nightly.yml/badge.svg)](https://github.com/sashakobtsev21-stack/restful-booker-tests/actions/workflows/nightly.yml)
 [![Allure Report](https://img.shields.io/badge/Allure-Report-orange.svg)](https://sashakobtsev21-stack.github.io/restful-booker-tests/)
-[![Node](https://img.shields.io/badge/Node-20%20LTS-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/Node-22%20LTS-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -14,13 +14,13 @@
 <!-- TODO: replace placeholder once first Allure report is live -->
 <!-- ![Allure dashboard screenshot](docs/images/allure-dashboard.png) -->
 
-🇬🇧 [English](#-english) · 🇷🇺 [Русская версия](#-русская-версия)
+[English](#english) · [Русская версия](#русская-версия)
 
 > Replace `sashakobtsev21-stack` in the badges/links above with your GitHub handle.
 
 ---
 
-## 🇬🇧 English
+## English
 
 ### Why this project?
 
@@ -45,7 +45,7 @@ the domain.
 | **Page Object Model** | Every project I've seen that started with "let's just use helpers" ended up with a 2000-line `utils.ts`. POM forces a per-page boundary. |
 | **Faker** | Random but reproducible-enough data without writing boring fixture files. |
 | **Zod** | Validating the env file the second it's loaded means tests die with a useful message instead of `undefined.toLowerCase()` deep inside. |
-| **AJV** | Industry standard for JSON Schema. Wrapped in a tiny matcher (`toMatchSchema`) so contract tests read naturally. |
+| **AJV** | The de-facto JSON Schema validator for Node. Wrapped in a tiny `toMatchSchema` matcher so contract tests read naturally. |
 | **Pino** | Pretty locally, JSON in CI, fast. Worth more than `console.log`. |
 | **Allure** | Recruiters and team leads read screenshots, not stack traces. Allure puts both in one place. |
 | **Husky + commitlint** | Saves me from `wip` commits accidentally landing on `main`. (Mostly.) |
@@ -134,7 +134,7 @@ Roughly 70 tests, organised by purpose so the CI matrix maps cleanly onto folder
 | `tests/visual/` | Pixel-diff snapshots of home, admin, booking form. Masks volatile bits. | 7 |
 | `tests/api/contracts/` | AJV-validated JSON Schema checks on auth / room / booking responses. | 5 |
 
-### AI features 🤖
+### AI features
 
 Three optional helpers behind a single `ANTHROPIC_API_KEY` toggle. They work
 in isolation — the rest of the suite is unaware.
@@ -239,17 +239,17 @@ Honest backlog, in rough priority order:
 
 ### Contacts
 
-If you spotted something off, or want to chat about QA tooling:
+If you spotted something off, or just want to chat about QA tooling:
 
-- ✉️ <oleksandr@example.com> *(replace with real)*
-- 💼 [linkedin.com/in/sashakobtsev21-stack](https://www.linkedin.com/in/sashakobtsev21-stack) *(replace)*
-- 💬 Telegram: `@sashakobtsev21-stack` *(replace)*
+- Email: <oleksandr@example.com> *(replace with real)*
+- LinkedIn: [linkedin.com/in/sashakobtsev21-stack](https://www.linkedin.com/in/sashakobtsev21-stack) *(replace)*
+- Telegram: `@sashakobtsev21-stack` *(replace)*
 
 License: [MIT](LICENSE).
 
 ---
 
-## 🇷🇺 Русская версия
+## Русская версия
 
 ### Зачем этот проект?
 
@@ -276,7 +276,7 @@ Restful-Booker Platform удобен тем, что у него есть и пу
 | **Page Object Model** | Каждый проект из моей практики, который начинался с «давайте просто хелперы», заканчивался 2000-строчным `utils.ts`. POM навязывает границу «один объект — одна страница». |
 | **Faker** | Случайные, но воспроизводимые-достаточно данные без портянок фикстур. |
 | **Zod** | Валидация env-файла на старте — тесты падают с понятным сообщением, а не `undefined.toLowerCase()` где-то в середине. |
-| **AJV** | Стандарт для JSON Schema. Обёрнут в маленький матчер (`toMatchSchema`), contract-тесты читаются естественно. |
+| **AJV** | Самый ходовой JSON Schema валидатор под Node. Завёрнут в маленький `toMatchSchema`, contract-тесты читаются естественно. |
 | **Pino** | Локально красиво, в CI — JSON, быстрый. Лучше, чем `console.log`. |
 | **Allure** | Скриншоты и стектрейсы рекрутеры читают охотнее логов. Allure кладёт всё в одном месте. |
 | **Husky + commitlint** | Не даёт случайно отправить `wip` в `main`. В основном. |
@@ -366,7 +366,7 @@ npm run allure:serve         # сгенерить и открыть Allure ло�
 | `tests/visual/` | Пиксельные снапшоты главной, админки, формы. С масками на динамику. | 7 |
 | `tests/api/contracts/` | AJV-валидация ответов auth / room / booking по JSON Schema. | 5 |
 
-### AI-фичи 🤖
+### AI-фичи
 
 Три опциональных хелпера за одним переключателем `ANTHROPIC_API_KEY`. Работают
 изолированно — остальной набор тестов про них не знает.
@@ -475,23 +475,8 @@ npm run allure:serve         # сгенерить и открыть Allure ло�
 
 Заметил что-то странное или хочется пообсуждать QA-инструменты:
 
-- ✉️ <oleksandr@example.com> *(подставить настоящий)*
-- 💼 [linkedin.com/in/sashakobtsev21-stack](https://www.linkedin.com/in/sashakobtsev21-stack) *(подставить)*
-- 💬 Telegram: `@sashakobtsev21-stack` *(подставить)*
+- Email: <oleksandr@example.com> *(подставить настоящий)*
+- LinkedIn: [linkedin.com/in/sashakobtsev21-stack](https://www.linkedin.com/in/sashakobtsev21-stack) *(подставить)*
+- Telegram: `@sashakobtsev21-stack` *(подставить)*
 
 Лицензия: [MIT](LICENSE).
-
----
-
-## Project status
-
-| Phase                                       | Done |
-| ------------------------------------------- | ---- |
-| 1. Init project, configs, husky             | ✅   |
-| 2. Base POM + fixtures + env                | ✅   |
-| 3. Smoke + первая часть regression          | ✅   |
-| 4. Negative / perf / visual / contracts     | ✅   |
-| 5. CI/CD + Docker + Allure                  | ✅   |
-| 6. AI helpers                               | ✅   |
-| 7. Docs, diagram, screenshots               | ✅   |
-| 8. Realistic git history                    | ✅   |
