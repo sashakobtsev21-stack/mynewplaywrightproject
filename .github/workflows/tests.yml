@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-pw-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-pw-smoke-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright (browsers + deps)
         if: steps.pw-cache.outputs.cache-hit != 'true'
@@ -89,10 +89,11 @@ jobs:
 
       - name: Cache Playwright browsers
         id: pw-cache
+        if: matrix.project != 'api'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-pw-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-pw-${{ matrix.project }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright (browsers + deps)
         if: matrix.project != 'api' && steps.pw-cache.outputs.cache-hit != 'true'
