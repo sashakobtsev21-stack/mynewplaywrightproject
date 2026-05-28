@@ -53,8 +53,8 @@ export const test = base.extend<PageFixtures & ApiFixtures & UtilFixtures, Worke
   authClient: async ({ request }, use) => {
     await use(new AuthClient(request));
   },
-  bookingClient: async ({ request }, use) => {
-    await use(new BookingClient(request));
+  bookingClient: async ({ request, adminToken }, use) => {
+    await use(new BookingClient(request, adminToken));
   },
   roomClient: async ({ request }, use) => {
     await use(new RoomClient(request));
