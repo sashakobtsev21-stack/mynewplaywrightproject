@@ -72,7 +72,7 @@ Flow:
 5. `peaceiris/actions-gh-pages@v4` pushes the generated folder to `gh-pages`.
    `force_orphan: true` keeps the branch history small.
 
-The deployed report lives at `https://<your-handle>.github.io/restful-booker-tests/`.
+The deployed report lives at `https://sashakobtsev21-stack.github.io/mynewplaywrightproject/`.
 
 ### One-time repo setup
 

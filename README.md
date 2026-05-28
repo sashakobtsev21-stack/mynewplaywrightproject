@@ -5,7 +5,7 @@
 [![Allure Report](https://img.shields.io/badge/Allure-Report-orange.svg)](https://sashakobtsev21-stack.github.io/mynewplaywrightproject/)
 [![Node](https://img.shields.io/badge/Node-22%20LTS-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > A personal portfolio project — UI + API + visual + contract tests against
 > [Restful-Booker Platform](https://automationintesting.online) using Playwright + TypeScript.
@@ -120,16 +120,17 @@ npm run allure:serve         # generate Allure + open it locally (needs Java)
 
 ### Test types
 
-Roughly 65 tests, organised by purpose so the CI matrix maps cleanly onto folders.
+Roughly 68 tests (6 currently `test.fixme`/`test.skip` — see CHANGELOG for why), organised by purpose so the CI matrix maps cleanly onto folders.
 
 | Folder | What it does | Count |
 | --- | --- | --- |
 | `tests/smoke/` | Quick sanity on home, admin login, API health. Runs on every PR before regression. | 8 |
-| `tests/regression/ui/` | Full booking flow, contact form, admin login, navigation. | 12 |
+| `tests/regression/ui/` | Full booking flow, contact form, admin login, navigation. | 13 |
 | `tests/regression/api/` | Auth + booking CRUD (serial) + list filtering. | 13 |
-| `tests/negative/` | Bad payloads, missing fields, malformed dates, XSS sanity, unicode, etc. | 15 |
+| `tests/negative/` | Bad payloads, missing fields, malformed dates, XSS sanity, unicode, etc. | 16 |
 | `tests/performance/` | Navigation timings, FCP, LCP, API response time. Results dumped to JSONL. | 4 |
-| `tests/visual/` | Pix
+| `tests/visual/` | Pixel snapshots of home, admin, and forms. Dynamic regions are masked. | 7 |
+| `tests/api/contracts/` | AJV-validated auth / room / booking responses against JSON Schemas. | 7 |
 
 ### AI features
 
@@ -350,8 +351,8 @@ npm run allure:serve         # сгенерить и открыть Allure ло�
 
 ### Типы тестов
 
-~70 тестов, разложены по назначению — так CI-матрица аккуратно ложится на
-структуру папок.
+~68 тестов (6 сейчас в `test.fixme`/`test.skip` — причины в CHANGELOG),
+разложены по назначению — так CI-матрица аккуратно ложится на структуру папок.
 
 | Папка | Что | Кол-во |
 | --- | --- | --- |

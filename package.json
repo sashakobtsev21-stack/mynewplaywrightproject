@@ -1,10 +1,26 @@
 {
   "name": "restful-booker-tests",
-  "version": "0.1.0",
+  "version": "0.7.0",
   "private": true,
-  "description": "Playwright + TypeScript test automation for Restful-Booker Platform. Personal portfolio project.",
-  "author": "Oleksandr",
+  "description": "End-to-end test automation for Restful-Booker Platform. Playwright + TypeScript with UI, API, visual, and contract tests.",
+  "keywords": [
+    "playwright",
+    "typescript",
+    "qa-automation",
+    "test-automation",
+    "e2e-testing",
+    "api-testing"
+  ],
+  "homepage": "https://github.com/sashakobtsev21-stack/mynewplaywrightproject#readme",
+  "bugs": {
+    "url": "https://github.com/sashakobtsev21-stack/mynewplaywrightproject/issues"
+  },
   "license": "MIT",
+  "author": "Alexandr Kobtsev <225353912+sashakobtsev21-stack@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sashakobtsev21-stack/mynewplaywrightproject.git"
+  },
   "engines": {
     "node": ">=22"
   },

@@ -53,3 +53,5 @@ performance-results/
 # Local-only files (must never be committed)
 scripts/init-git-history.ps1
 docs/simulated-issues.md
+scratch-*
+*.scratch.*

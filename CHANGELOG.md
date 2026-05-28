@@ -12,6 +12,24 @@ No public releases yet — everything is pre-1.0.
 - Slack/Telegram nightly failure notifications
 - Performance trending dashboard from `performance-results/*.jsonl`
 
+## [0.7.1] — 2026-05-28
+
+### Fixed
+- CI: per-project Playwright browser cache so firefox/webkit actually install.
+- Selectors aligned with the live demo on the reservation page (Reserve Now /
+  Cancel / form inputs).
+- `HomePage` now waits for room booking links before `assertLoaded` resolves.
+- Authenticated `GET /booking/{id}` (platform requires a token now).
+- `bookingFactory` uses far-future random dates to avoid 409 slot collisions.
+- Booking schema no longer requires `email`/`phone` (platform stopped returning them).
+- Test-design fixes: 403/404 tolerance on unauth `GET`, factory dates in `PUT`.
+- Two flows marked `test.fixme`: happy-path POST (rate-limit) and the cancel
+  test (UI state machine mismatch).
+- Schemas synced with platform: `PUT` response unwrap, `PATCH` endpoint removed.
+- Default env vars to public demo so CI runs without secrets.
+- Corrected API base path so clients hit the REST API, not the frontend.
+- Added `scrollToContact()` to `HomePage` and fixed `toMatchSchema` matcher typing.
+
 ## [0.7.0] — Week 4, end
 
 ### Added
