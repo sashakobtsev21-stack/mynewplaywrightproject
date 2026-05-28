@@ -19,12 +19,13 @@ export class BookingFormComponent {
   readonly phone: Locator;
 
   constructor(scope: Locator | Page) {
-    // Page and Locator both implement getByPlaceholder, so this is type-safe enough.
+    // Reservation form inputs only have `name` attributes (no id/data-testid).
+    // Page and Locator both implement locator(), so this is type-safe enough.
     const s = scope as Locator;
-    this.firstName = s.getByPlaceholder(/firstname/i);
-    this.lastName = s.getByPlaceholder(/lastname/i);
-    this.email = s.getByPlaceholder(/email/i);
-    this.phone = s.getByPlaceholder(/phone/i);
+    this.firstName = s.locator('input[name="firstname"]');
+    this.lastName = s.locator('input[name="lastname"]');
+    this.email = s.locator('input[name="email"]');
+    this.phone = s.locator('input[name="phone"]');
   }
 
   async fill(g: GuestDetails): Promise<void> {

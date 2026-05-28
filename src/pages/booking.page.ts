@@ -6,51 +6,89 @@ import { BookingFormComponent, type GuestDetails } from './components/booking-fo
 export type { GuestDetails };
 
 /**
- * Booking flow on the demo site is part of the home page (per-room form).
- * Modelling it as its own POM so when/if dedicated room pages appear,
- * swapping `path` is the only change needed.
+ * Booking flow lives on /reservation/{roomId} — entered from a room card on
+ * the home page. Path stays as `home` because the test entry point is the
+ * home page; tests reach this page via `homePage.openFirstRoomBooking()`.
  *
- * Guest fields moved to BookingFormComponent in the week-2 refactor — they're
- * also reused from the home page contact area.
+ * Reservation UI state machine:
+ *   landing  -> Reserve Now visible, no form
+ *   form open -> Reserve Now (acts as submit) + Cancel + 4 guest inputs visible
+ *   submit empty -> alert.alert-danger with validation messages
+ *
+ * Dates are baked into the URL (`?checkin=...&checkout=...`) — there are no
+ * date inputs to fill on this page, so setDates re-navigates with new params.
  */
 export class BookingPage extends BasePage {
   readonly path = ROUTES.home;
 
   readonly form: BookingFormComponent;
-  readonly checkInInput: Locator;
-  readonly checkOutInput: Locator;
   readonly bookButton: Locator;
   readonly cancelButton: Locator;
   readonly confirmation: Locator;
   readonly errorAlert: Locator;
+  // The current UI takes dates via URL params (no DOM inputs). These remain
+  // for backward-compat with a `test.fixme` that referenced them; they don't
+  // match anything and shouldn't be used in active tests — call setDates().
+  readonly checkInInput: Locator;
+  readonly checkOutInput: Locator;
+
+  // Indicator of "form is open" — the .room-booking-form input group only
+  // appears once Reserve Now is clicked, and disappears on Cancel.
+  private readonly formContainer: Locator;
+  private storedGuest: GuestDetails | null = null;
 
   constructor(page: Page) {
     super(page);
 
     this.form = new BookingFormComponent(page);
+    this.formContainer = page.locator('.room-booking-form').first();
 
-    // Date inputs are masked; sometimes a calendar picker is shown instead.
-    // FIXME: depending on viewport width the picker swaps text<->click — revisit when writing date tests
-    this.checkInInput = page.locator('input[name="checkin"], [data-testid="checkin"]').first();
-    this.checkOutInput = page.locator('input[name="checkout"], [data-testid="checkout"]').first();
+    this.checkInInput = page.locator('input[name="checkin"]');
+    this.checkOutInput = page.locator('input[name="checkout"]');
 
-    this.bookButton = page.getByRole('button', { name: /^book$/i }).last();
-    this.cancelButton = page.getByRole('button', { name: /cancel/i });
+    this.bookButton = page.getByRole('button', { name: /reserve now/i });
+    this.cancelButton = page.getByRole('button', { name: /^cancel$/i });
 
-    this.confirmation = page.locator('.booking-confirmation, .alert-success').first();
+    this.confirmation = page
+      .locator('.booking-confirmation, .alert-success, [data-testid="reservation-confirmation"]')
+      .first();
     this.errorAlert = page.locator('.alert-danger, [role="alert"]').first();
   }
 
+  /**
+   * Reveal the guest form. Idempotent — no-op if it's already open.
+   */
+  private async ensureFormOpen(): Promise<void> {
+    if (await this.formContainer.isVisible()) return;
+    await this.bookButton.click();
+    await this.formContainer.waitFor({ state: 'visible', timeout: 5_000 });
+  }
+
   async fillGuestDetails(g: GuestDetails): Promise<void> {
+    this.storedGuest = g;
+    await this.ensureFormOpen();
     await this.form.fill(g);
   }
 
+  /**
+   * The reservation page takes check-in/check-out via URL query params; there
+   * are no date inputs in the DOM. We re-navigate with the desired window and
+   * restore any already-filled guest details so the test order
+   * (fillGuestDetails -> setDates -> submit) keeps working.
+   */
   async setDates(checkIn: string, checkOut: string): Promise<void> {
-    await this.checkInInput.fill(checkIn);
-    await this.checkOutInput.fill(checkOut);
+    const url = new URL(this.page.url());
+    url.searchParams.set('checkin', checkIn);
+    url.searchParams.set('checkout', checkOut);
+    await this.page.goto(url.toString(), { waitUntil: 'domcontentloaded' });
+    if (this.storedGuest) {
+      await this.ensureFormOpen();
+      await this.form.fill(this.storedGuest);
+    }
   }
 
   async submit(): Promise<void> {
+    await this.ensureFormOpen();
     await this.bookButton.click();
   }
 
