@@ -22,15 +22,15 @@ export class HomePage extends BasePage {
     super(page);
 
     this.hero = page.locator('.hotel-logoUrl, .hotel-room-info').first();
-    this.roomCards = page.locator('.room-card, [data-testid="room-card"]');
-    this.bookRoomButtons = page.getByRole('button', { name: /book this room/i });
+    this.roomCards = page.locator('.room-card, [data-testid="room-card"], .hotel-room-info');
+    this.bookRoomButtons = page.getByRole('link', { name: /book now/i });
 
     this.contactSection = page.locator('#contact');
-    this.contactName = this.contactSection.getByPlaceholder(/name/i);
-    this.contactEmail = this.contactSection.getByPlaceholder(/email/i);
-    this.contactPhone = this.contactSection.getByPlaceholder(/phone/i);
-    this.contactSubject = this.contactSection.getByPlaceholder(/subject/i);
-    this.contactMessage = this.contactSection.getByPlaceholder(/message/i);
+    this.contactName = page.getByTestId('ContactName');
+    this.contactEmail = page.getByTestId('ContactEmail');
+    this.contactPhone = page.getByTestId('ContactPhone');
+    this.contactSubject = page.getByTestId('ContactSubject');
+    this.contactMessage = page.getByTestId('ContactDescription');
     this.contactSubmit = this.contactSection.getByRole('button', { name: /submit/i });
   }
 
