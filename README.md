@@ -1,7 +1,6 @@
 # Restful-Booker Platform — Test Automation
 
 [![tests](https://github.com/sashakobtsev21-stack/mynewplaywrightproject/actions/workflows/tests.yml/badge.svg)](https://github.com/sashakobtsev21-stack/mynewplaywrightproject/actions/workflows/tests.yml)
-[![nightly](https://github.com/sashakobtsev21-stack/mynewplaywrightproject/actions/workflows/nightly.yml/badge.svg)](https://github.com/sashakobtsev21-stack/mynewplaywrightproject/actions/workflows/nightly.yml)
 [![Allure Report](https://img.shields.io/badge/Allure-Report-orange.svg)](https://sashakobtsev21-stack.github.io/mynewplaywrightproject/)
 [![Node](https://img.shields.io/badge/Node-22%20LTS-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
