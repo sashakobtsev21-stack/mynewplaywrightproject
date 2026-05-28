@@ -44,6 +44,10 @@ export class HomePage extends BasePage {
     await this.bookRoomButtons.first().click();
   }
 
+  async scrollToContact(): Promise<void> {
+    await this.scrollTo(this.contactSection);
+  }
+
   async submitContactForm(data: {
     name: string;
     email: string;

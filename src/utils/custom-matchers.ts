@@ -19,8 +19,11 @@ expect.extend({
   },
 });
 
-declare module '@playwright/test' {
-  interface Matchers<R> {
-    toMatchSchema(schema: object): R;
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace PlaywrightTest {
+    interface Matchers<R, T> {
+      toMatchSchema(schema: object): R;
+    }
   }
 }
