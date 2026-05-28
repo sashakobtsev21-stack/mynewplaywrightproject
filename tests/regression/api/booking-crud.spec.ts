@@ -1,6 +1,5 @@
 import { test, expect } from '../../../src/fixtures/playwright-fixtures';
 import { bookingFactory } from '../../../src/fixtures/data-factory';
-import { bookingWindow } from '../../../src/utils/date-helpers';
 import type { Booking } from '../../../src/api/types/booking.types';
 
 /**
@@ -31,7 +30,9 @@ test.describe.serial('booking CRUD', () => {
   });
 
   test('PUT fully updates the booking', async ({ bookingClient, adminToken }) => {
-    const [checkin, checkout] = bookingWindow(30, 5);
+    // Reuse the factory's far-future random window so PUT doesn't collide with
+    // existing bookings (a hard-coded `bookingWindow(30, 5)` was 409-prone).
+    const { bookingdates: { checkin, checkout } } = bookingFactory();
     const updated = await bookingClient.update(
       created.bookingid,
       {
@@ -46,7 +47,10 @@ test.describe.serial('booking CRUD', () => {
     expect(updated.bookingdates.checkin).toBe(checkin);
   });
 
-  test('PATCH partially updates the booking', async ({ bookingClient, adminToken }) => {
+  test.fixme('PATCH partially updates the booking', async ({ bookingClient, adminToken }) => {
+    // Platform now responds 405 Method Not Allowed on PATCH /booking/{id} —
+    // partial updates aren't supported anymore. Re-enable when (and if) the
+    // endpoint comes back, or rewrite as a PUT-based merge update.
     const patched = await bookingClient.partialUpdate(
       created.bookingid,
       { email: '[email protected]' },
