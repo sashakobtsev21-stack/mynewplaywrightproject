@@ -11,9 +11,11 @@ dotenv.config();
 
 const schema = z.object({
   TEST_ENV: z.enum(['public', 'local']).default('public'),
-  BASE_URL: z.string().url(),
-  ADMIN_USERNAME: z.string().min(1),
-  ADMIN_PASSWORD: z.string().min(1),
+  // Defaults point at the public demo so the suite runs with zero config
+  // (CI, fresh clone). Override via .env / .env.<env> for local runs.
+  BASE_URL: z.string().url().default('https://automationintesting.online'),
+  ADMIN_USERNAME: z.string().min(1).default('admin'),
+  ADMIN_PASSWORD: z.string().min(1).default('password'),
   ANTHROPIC_API_KEY: z.string().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
   CI: z.string().optional(),
