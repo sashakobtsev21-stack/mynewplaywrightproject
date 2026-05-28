@@ -8,8 +8,6 @@
     "firstname",
     "lastname",
     "depositpaid",
-    "email",
-    "phone",
     "bookingdates"
   ],
   "properties": {
