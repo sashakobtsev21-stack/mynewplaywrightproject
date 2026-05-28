@@ -120,17 +120,16 @@ npm run allure:serve         # generate Allure + open it locally (needs Java)
 
 ### Test types
 
-Roughly 70 tests, organised by purpose so the CI matrix maps cleanly onto folders.
+Roughly 65 tests, organised by purpose so the CI matrix maps cleanly onto folders.
 
 | Folder | What it does | Count |
 | --- | --- | --- |
 | `tests/smoke/` | Quick sanity on home, admin login, API health. Runs on every PR before regression. | 8 |
-| `tests/regression/ui/` | Full booking flow, contact form, admin login, navigation. | 13 |
+| `tests/regression/ui/` | Full booking flow, contact form, admin login, navigation. | 12 |
 | `tests/regression/api/` | Auth + booking CRUD (serial) + list filtering. | 13 |
-| `tests/negative/` | Bad payloads, missing fields, malformed dates, XSS sanity, unicode, etc. | 16 |
+| `tests/negative/` | Bad payloads, missing fields, malformed dates, XSS sanity, unicode, etc. | 15 |
 | `tests/performance/` | Navigation timings, FCP, LCP, API response time. Results dumped to JSONL. | 4 |
-| `tests/visual/` | Pixel-diff snapshots of home, admin, booking form. Masks volatile bits. | 7 |
-| `tests/api/contracts/` | AJV-validated JSON Schema checks on auth / room / booking responses. | 7 |
+| `tests/visual/` | Pix
 
 ### AI features
 
