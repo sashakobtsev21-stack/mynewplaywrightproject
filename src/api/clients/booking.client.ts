@@ -60,7 +60,11 @@ export class BookingClient extends BaseClient {
   }
 
   async getById(id: number): Promise<Booking> {
-    const res = await this.request.get(`${API.booking}/${id}`);
+    // Like list(), GET by id is now admin-only on the live platform — re-use
+    // the worker-scoped token injected via the constructor. Negative tests
+    // that want to assert anonymous access stay on `request.get(...)` directly.
+    const headers = this.token ? cookieHeader(this.token) : undefined;
+    const res = await this.request.get(`${API.booking}/${id}`, { headers });
     await this.expectOk(res, `booking.getById(${id})`);
     return res.json();
   }
@@ -77,7 +81,11 @@ export class BookingClient extends BaseClient {
       headers: cookieHeader(token),
     });
     await this.expectOk(res, `booking.update(${id})`);
-    return res.json();
+    // The platform now wraps PUT responses as { booking: {...}, bookingid }, while
+    // POST still returns the booking flat. Unwrap so callers can treat both the
+    // same and our schema validations keep working.
+    const body = (await res.json()) as Booking | { booking: Booking };
+    return 'booking' in body ? body.booking : body;
   }
 
   async partialUpdate(

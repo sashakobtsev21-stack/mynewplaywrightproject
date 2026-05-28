@@ -17,7 +17,13 @@ export const guestFactory = (overrides: Partial<GuestContact> = {}): GuestContac
 export const bookingFactory = (
   overrides: Partial<CreateBookingPayload> = {},
 ): CreateBookingPayload => {
-  const [checkin, checkout] = bookingWindow();
+  // The demo has a small fixed pool of rooms and tests run in parallel,
+  // so a hard-coded near-future window collides constantly (POST -> 409).
+  // Push the window deep into the future with a wide random offset so two
+  // concurrent runs are extremely unlikely to land on the same nights.
+  const offsetDays = faker.number.int({ min: 90, max: 300 });
+  const nights = faker.number.int({ min: 1, max: 3 });
+  const [checkin, checkout] = bookingWindow(offsetDays, nights);
   return {
     roomid: 1,
     depositpaid: true,
