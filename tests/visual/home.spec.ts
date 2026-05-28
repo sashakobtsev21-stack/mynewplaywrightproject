@@ -19,10 +19,12 @@ test.describe('visual: home page', () => {
     });
   });
 
-  test('full page', async ({ homePage, page }) => {
+test('full page', async ({ homePage, page }) => {
     await homePage.open();
+    // eslint-disable-next-line playwright/no-networkidle -- visual snapshot needs the page fully settled
     await page.waitForLoadState('networkidle');
     // give carousels/animations a beat to settle
+    // eslint-disable-next-line playwright/no-wait-for-timeout -- waiting out CSS animations before snapshot
     await page.waitForTimeout(500);
 
     await expect(page).toHaveScreenshot('home-full.png', {
