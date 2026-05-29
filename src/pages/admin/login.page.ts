@@ -9,6 +9,7 @@ export class AdminLoginPage extends BasePage {
   readonly usernameInput: Locator;
   readonly passwordInput: Locator;
   readonly submitButton: Locator;
+  readonly logoutButton: Locator;
   readonly errorMessage: Locator;
 
   constructor(page: Page) {
@@ -17,7 +18,22 @@ export class AdminLoginPage extends BasePage {
     this.usernameInput = page.getByLabel(/username/i).or(page.locator('#username'));
     this.passwordInput = page.getByLabel(/password/i).or(page.locator('#password'));
     this.submitButton = page.getByRole('button', { name: /login/i });
+    this.logoutButton = page.getByRole('button', { name: /logout/i });
     this.errorMessage = page.locator('.alert-danger, [role="alert"]').first();
+  }
+
+  // The admin SPA is slow to reach 'load' on the public demo (it was timing out
+  // the 20s navigation budget). domcontentloaded + an explicit wait for the form
+  // is a faster, more reliable readiness signal.
+  override async open(): Promise<void> {
+    await this.page.goto(this.path, { waitUntil: 'domcontentloaded' });
+    await this.waitForReady();
+  }
+
+  // The form renders a beat after the route loads; wait for it so callers that
+  // immediately fill fields don't race the render.
+  protected override async waitForReady(): Promise<void> {
+    await this.usernameInput.waitFor({ state: 'visible' });
   }
 
   async login(username: string, password: string): Promise<void> {
@@ -38,7 +54,9 @@ export class AdminLoginPage extends BasePage {
   }
 
   async expectLoggedIn(): Promise<void> {
-    // After successful login the admin landing replaces the login form
-    await expect(this.submitButton).toBeHidden({ timeout: 5_000 });
+    // Assert a positive signal — the Logout button on the admin landing — rather
+    // than the absence of the Login button. The landing replaces the form after
+    // a navigation to /admin/rooms, so give it room to render.
+    await expect(this.logoutButton).toBeVisible({ timeout: 10_000 });
   }
 }
