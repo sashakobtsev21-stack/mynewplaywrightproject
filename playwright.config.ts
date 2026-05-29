@@ -38,27 +38,27 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: ['**/api/**'],
+      testIgnore: ['**/api/**', '**/unit/**'],
     },
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testIgnore: ['**/api/**'],
+      testIgnore: ['**/api/**', '**/unit/**'],
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testIgnore: ['**/api/**'],
+      testIgnore: ['**/api/**', '**/unit/**'],
     },
     {
       name: 'mobile-chrome',
       use: { ...devices['Pixel 5'] },
-      testIgnore: ['**/api/**', '**/visual/**'],
+      testIgnore: ['**/api/**', '**/visual/**', '**/unit/**'],
     },
     {
       name: 'mobile-safari',
       use: { ...devices['iPhone 13'] },
-      testIgnore: ['**/api/**', '**/visual/**'],
+      testIgnore: ['**/api/**', '**/visual/**', '**/unit/**'],
     },
     {
       // pure API tests, no browser
@@ -67,6 +67,11 @@ export default defineConfig({
       use: {
         baseURL: env.BASE_URL,
       },
+    },
+    {
+      // pure unit tests for the src/ and ai/ helpers, no browser, no network
+      name: 'unit',
+      testMatch: ['**/unit/**/*.spec.ts'],
     },
   ],
 });

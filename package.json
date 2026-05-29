@@ -37,6 +37,7 @@
     "report": "playwright show-report",
     "test:ui": "playwright test --project=chromium tests/regression/ui",
     "test:api": "playwright test --project=api",
+    "test:unit": "playwright test --project=unit",
     "test:contracts": "playwright test --project=api tests/api/contracts",
     "test:negative": "playwright test tests/negative",
     "test:perf": "playwright test --grep @perf",
