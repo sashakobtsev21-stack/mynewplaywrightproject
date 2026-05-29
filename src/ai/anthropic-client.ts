@@ -1,6 +1,8 @@
+import * as crypto from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../config/env';
 import { childLogger } from '../utils/logger';
+import { computeCost, writeTrace } from './observability';
 
 export const aiLogger = childLogger('ai');
 
@@ -52,28 +54,30 @@ export function isRetryable(err: unknown): boolean {
   return name === 'APIConnectionError' || name === 'APIConnectionTimeoutError';
 }
 
-/**
- * Single entry point for Messages API calls: applies the default model and an
- * exponential backoff with jitter. All three AI helpers go through here so
- * retry behaviour (and, later, tracing) lives in one place.
- */
 export type CallParams = Omit<Anthropic.MessageCreateParamsNonStreaming, 'model'> & {
   model?: Anthropic.MessageCreateParamsNonStreaming['model'];
 };
 
-export async function callClaude(
-  params: CallParams,
-  retry: RetryConfig = DEFAULT_RETRY,
-): Promise<Anthropic.Message> {
-  const client = getClient();
-  const withModel: Anthropic.MessageCreateParamsNonStreaming = {
-    ...params,
-    model: params.model ?? MODEL,
-  };
+/** Where a call came from, recorded in the trace line. */
+export interface CallMeta {
+  module: string;
+  promptName?: string;
+  promptVersion?: number;
+}
 
+export interface CallOptions {
+  retry?: RetryConfig;
+  meta?: CallMeta;
+}
+
+async function sendWithRetry(
+  client: Anthropic,
+  params: Anthropic.MessageCreateParamsNonStreaming,
+  retry: RetryConfig,
+): Promise<Anthropic.Message> {
   for (let attempt = 0; ; attempt++) {
     try {
-      return await client.messages.create(withModel);
+      return await client.messages.create(params);
     } catch (err) {
       if (attempt >= retry.maxRetries || !isRetryable(err)) throw err;
       const backoff = Math.min(retry.maxDelayMs, retry.baseDelayMs * 2 ** attempt);
@@ -84,6 +88,65 @@ export async function callClaude(
       );
       await sleep(delay);
     }
+  }
+}
+
+/**
+ * Single entry point for Messages API calls: applies the default model, runs an
+ * exponential backoff with jitter, and writes one trace line per call (timing,
+ * tokens, cost). All three AI helpers go through here so reliability and
+ * observability live in one place.
+ */
+export async function callClaude(
+  params: CallParams,
+  opts: CallOptions = {},
+): Promise<Anthropic.Message> {
+  const client = getClient();
+  const retry = opts.retry ?? DEFAULT_RETRY;
+  const withModel: Anthropic.MessageCreateParamsNonStreaming = {
+    ...params,
+    model: params.model ?? MODEL,
+  };
+
+  const traceId = crypto.randomUUID();
+  const inputHash = crypto
+    .createHash('sha1')
+    .update(JSON.stringify(withModel.messages))
+    .digest('hex')
+    .slice(0, 16);
+  const start = Date.now();
+
+  try {
+    const resp = await sendWithRetry(client, withModel, retry);
+    writeTrace({
+      trace_id: traceId,
+      ts: new Date().toISOString(),
+      module: opts.meta?.module ?? 'unknown',
+      prompt_name: opts.meta?.promptName,
+      prompt_version: opts.meta?.promptVersion,
+      model: withModel.model,
+      input_hash: inputHash,
+      latency_ms: Date.now() - start,
+      input_tokens: resp.usage.input_tokens,
+      output_tokens: resp.usage.output_tokens,
+      cost_usd: computeCost(withModel.model, resp.usage.input_tokens, resp.usage.output_tokens),
+      success: true,
+    });
+    return resp;
+  } catch (err) {
+    writeTrace({
+      trace_id: traceId,
+      ts: new Date().toISOString(),
+      module: opts.meta?.module ?? 'unknown',
+      prompt_name: opts.meta?.promptName,
+      prompt_version: opts.meta?.promptVersion,
+      model: withModel.model,
+      input_hash: inputHash,
+      latency_ms: Date.now() - start,
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    throw err;
   }
 }
 

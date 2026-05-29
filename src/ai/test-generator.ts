@@ -47,24 +47,35 @@ function collectProjectContext(kind: TestKind): string {
   ].join('\n');
 }
 
-function buildPrompt(requirement: string, kind: TestKind): string {
-  return loadPrompt('test-generator').render({
-    requirement,
-    kind,
-    projectContext: collectProjectContext(kind),
-  });
-}
-
 export async function generateTest(requirement: string, kind: TestKind): Promise<string> {
   if (!isAiEnabled()) {
     throw new Error('ANTHROPIC_API_KEY is not set — cannot generate.');
   }
   aiLogger.info({ requirement, kind }, 'generating draft spec');
 
-  const resp = await callClaude({
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: buildPrompt(requirement, kind) }],
-  });
+  const prompt = loadPrompt('test-generator');
+  const resp = await callClaude(
+    {
+      max_tokens: 2048,
+      messages: [
+        {
+          role: 'user',
+          content: prompt.render({
+            requirement,
+            kind,
+            projectContext: collectProjectContext(kind),
+          }),
+        },
+      ],
+    },
+    {
+      meta: {
+        module: 'test-generator',
+        promptName: prompt.meta.name,
+        promptVersion: prompt.meta.version,
+      },
+    },
+  );
 
   const body = extractText(resp.content);
   // Strip any stray markdown fences just in case

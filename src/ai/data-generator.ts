@@ -87,7 +87,8 @@ export class AiDataGenerator {
       return cached as ResultMap[K][];
     }
 
-    const prompt = loadPrompt('data-generator').render({
+    const dgPrompt = loadPrompt('data-generator');
+    const prompt = dgPrompt.render({
       count: String(count),
       kind,
       shape: SHAPES[kind],
@@ -96,10 +97,16 @@ export class AiDataGenerator {
 
     try {
       aiLogger.info({ kind, count }, 'calling claude for data generation');
-      const resp = await callClaude({
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: prompt }],
-      });
+      const resp = await callClaude(
+        { max_tokens: 1024, messages: [{ role: 'user', content: prompt }] },
+        {
+          meta: {
+            module: 'data-generator',
+            promptName: dgPrompt.meta.name,
+            promptVersion: dgPrompt.meta.version,
+          },
+        },
+      );
       const { strict, loose } = RECORD_SCHEMAS[kind];
       const { records, usedLoose } = parseRecords(extractText(resp.content), strict, loose);
       if (usedLoose) {

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type Anthropic from '@anthropic-ai/sdk';
 import { aiLogger, callClaude, extractText, isAiEnabled } from './anthropic-client';
-import { loadPrompt } from './prompt-loader';
+import { loadPrompt, type LoadedPrompt } from './prompt-loader';
 
 const OUT_DIR = 'ai-analysis';
 
@@ -52,7 +52,10 @@ export async function analyze(ctx: FailureContext): Promise<string> {
     return formatLocalAnalysis(ctx);
   }
 
-  const userContent: Anthropic.ContentBlockParam[] = [{ type: 'text', text: buildPrompt(ctx) }];
+  const prompt = loadPrompt('failure-analyzer');
+  const userContent: Anthropic.ContentBlockParam[] = [
+    { type: 'text', text: buildPrompt(prompt, ctx) },
+  ];
 
   if (ctx.screenshotPath && fs.existsSync(ctx.screenshotPath)) {
     const data = fs.readFileSync(ctx.screenshotPath).toString('base64');
@@ -64,15 +67,21 @@ export async function analyze(ctx: FailureContext): Promise<string> {
 
   aiLogger.info({ dir: ctx.testDir, hasScreenshot: !!ctx.screenshotPath }, 'analyzing failure');
 
-  const resp = await callClaude({
-    max_tokens: 1024,
-    messages: [{ role: 'user', content: userContent }],
-  });
+  const resp = await callClaude(
+    { max_tokens: 1024, messages: [{ role: 'user', content: userContent }] },
+    {
+      meta: {
+        module: 'failure-analyzer',
+        promptName: prompt.meta.name,
+        promptVersion: prompt.meta.version,
+      },
+    },
+  );
   return extractText(resp.content);
 }
 
-function buildPrompt(ctx: FailureContext): string {
-  return loadPrompt('failure-analyzer').render({
+function buildPrompt(prompt: LoadedPrompt, ctx: FailureContext): string {
+  return prompt.render({
     testDir: ctx.testDir,
     errorContext: ctx.errorContextMd ?? '<error-context.md not found>',
     specSource: ctx.specSource ?? '<spec source not provided>',
