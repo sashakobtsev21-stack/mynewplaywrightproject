@@ -3,6 +3,8 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { aiLogger, extractText, getClient, isAiEnabled, MODEL } from './anthropic-client';
 import { loadPrompt } from './prompt-loader';
+import { parseRecords } from './structured';
+import { RECORD_SCHEMAS } from './schemas';
 import { bookingFactory, guestFactory } from '../fixtures/data-factory';
 import type { CreateBookingPayload, GuestContact } from '../api/types/booking.types';
 
@@ -69,19 +71,6 @@ function writeCache(key: string, data: unknown): void {
   fs.writeFileSync(path.join(CACHE_DIR, `${key}.json`), JSON.stringify(data, null, 2), 'utf8');
 }
 
-function parseJsonArray(text: string): unknown[] {
-  // Tolerate stray code fences if the model ignores instructions
-  const cleaned = text
-    .replace(/^```(?:json)?\s*\n?/i, '')
-    .replace(/\n?```\s*$/i, '')
-    .trim();
-  const parsed = JSON.parse(cleaned);
-  if (!Array.isArray(parsed)) {
-    throw new Error(`Expected JSON array, got: ${cleaned.slice(0, 120)}`);
-  }
-  return parsed;
-}
-
 export class AiDataGenerator {
   async generate<K extends AiKind>(kind: K, opts: AiGenerateOpts = {}): Promise<ResultMap[K][]> {
     const count = opts.count ?? 1;
@@ -113,9 +102,13 @@ export class AiDataGenerator {
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }],
       });
-      const parsed = parseJsonArray(extractText(resp.content));
-      writeCache(key, parsed);
-      return parsed as ResultMap[K][];
+      const { strict, loose } = RECORD_SCHEMAS[kind];
+      const { records, usedLoose } = parseRecords(extractText(resp.content), strict, loose);
+      if (usedLoose) {
+        aiLogger.warn({ kind }, 'ai output passed only the loose schema, not the strict one');
+      }
+      writeCache(key, records);
+      return records as ResultMap[K][];
     } catch (err) {
       // Any failure -> faker. Tests still need to run.
       aiLogger.warn(
