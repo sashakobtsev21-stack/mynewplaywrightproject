@@ -12,9 +12,35 @@ No public releases yet — everything is pre-1.0.
 - Slack/Telegram nightly failure notifications
 - Performance trending dashboard from `performance-results/*.jsonl`
 
+## [0.8.0] — 2026-05-29
+
+Repositioned toward AI engineering: the AI layer grew from three thin helpers
+into something with reliability, observability, and evals around it.
+
+### Added
+
+- Prompts extracted to versioned files (`src/ai/prompts/*.v1.md`) with a loader
+  that enforces the declared input/output contract.
+- Zod validation of generated data, with a strict/loose fallback and recovery of
+  JSON truncated at `max_tokens` (`src/ai/structured.ts`, `schemas.ts`).
+- `callClaude()` wrapper: exponential-backoff retries plus a per-call JSONL trace
+  (latency, tokens, cost) in `logs/ai-traces.jsonl`.
+- `npm run ai:budget` — totals AI spend from the trace log against `.ai-budget.json`.
+- `npm run eval:ai` — eval suite scoring all three helpers, runnable offline against fixtures.
+- `tests/unit/` — node-only `unit` Playwright project covering the AI layer; runs in CI.
+- `docs/ai-layer-design.md`.
+
+### Changed
+
+- README restructured around the AI layer; `ai-features.md` expanded with traces,
+  costs, evals, and a safety note.
+- All ESLint warnings cleared (assert-name patterns + targeted spec fixes).
+- `POST >1MB` negative test moved from `test.skip` to `test.fixme` (same effect, clearer intent).
+
 ## [0.7.1] — 2026-05-28
 
 ### Fixed
+
 - CI: per-project Playwright browser cache so firefox/webkit actually install.
 - Selectors aligned with the live demo on the reservation page (Reserve Now /
   Cancel / form inputs).
@@ -33,6 +59,7 @@ No public releases yet — everything is pre-1.0.
 ## [0.7.0] — Week 4, end
 
 ### Added
+
 - Full bilingual README (EN + RU sections).
 - `docs/architecture.md` with a Mermaid diagram of the layers.
 - `docs/ai-features.md` — usage, prompts, fallbacks, costs.
@@ -41,11 +68,13 @@ No public releases yet — everything is pre-1.0.
 - `CHANGELOG.md` (this file).
 
 ### Changed
+
 - Tidied a few comments after a re-read. No behaviour changes.
 
 ## [0.6.0] — Week 4
 
 ### Added
+
 - `@anthropic-ai/sdk` + `tsx` for TS script entrypoints.
 - `src/ai/anthropic-client.ts` — shared lazy-initialised client.
 - `src/ai/test-generator.ts` + `scripts/generate-test.ts` — draft `.spec.ts`
@@ -56,12 +85,14 @@ No public releases yet — everything is pre-1.0.
   with sha1-keyed disk cache and a faker fallback chain.
 
 ### Notes
+
 - All three AI modules degrade gracefully without `ANTHROPIC_API_KEY` — tests
   themselves are unaffected.
 
 ## [0.5.0] — Week 3
 
 ### Added
+
 - `.github/workflows/tests.yml` — PR + push pipeline.
 - `.github/workflows/nightly.yml` — full matrix on a cron, retains 14d.
 - `.github/workflows/publish-allure.yml` — `workflow_run` → merge artifacts →
@@ -72,11 +103,13 @@ No public releases yet — everything is pre-1.0.
 - `allure-playwright` reporter, wired into `playwright.config.ts`.
 
 ### Changed
+
 - README got CI/Allure/Docker badges and a Quick start.
 
 ## [0.4.0] — Week 3, early
 
 ### Added
+
 - AJV-based JSON Schema validation:
   - `src/api/schemas/{booking,booking-list,room,room-list,auth}.schema.json`
   - `src/utils/schema-validator.ts` wrapper (AJV with `strict: false`)
@@ -93,6 +126,7 @@ No public releases yet — everything is pre-1.0.
   `maxDiffPixelRatio` and masks on volatile bits (images, prices).
 
 ### Changed
+
 - npm scripts: added `test:negative`, `test:contracts`, `test:perf`,
   `test:visual`, `test:visual:update`.
 - `.gitignore` learnt about `performance-results/`.
@@ -100,6 +134,7 @@ No public releases yet — everything is pre-1.0.
 ## [0.3.0] — Week 2
 
 ### Added
+
 - `@faker-js/faker` and a `src/fixtures/data-factory.ts`
   (`guestFactory`, `bookingFactory`, `uiGuestFactory`).
 - `src/utils/date-helpers.ts` (`toIsoDate`, `addDays`, `bookingWindow`) and
@@ -111,6 +146,7 @@ No public releases yet — everything is pre-1.0.
 - Regression API: `auth`, `booking-crud` (serial), `booking-list` (13 tests).
 
 ### Refactored
+
 - Extracted `BookingFormComponent` from `BookingPage` once the same guest
   fields appeared in two places. `GuestDetails` type moved with it to avoid
   a circular import.
@@ -118,6 +154,7 @@ No public releases yet — everything is pre-1.0.
 ## [0.2.0] — Week 1, end
 
 ### Added
+
 - `src/config/env.ts` — zod-validated env loader; fails loudly on bad input.
 - `src/config/constants.ts` — `ROUTES`, `TIMEOUTS`, `API` prefixes.
 - `src/utils/logger.ts` — pino, pretty-print local / JSON in CI.
@@ -126,12 +163,14 @@ No public releases yet — everything is pre-1.0.
   fixtures and a per-test `log` fixture.
 
 ### Changed
+
 - `playwright.config.ts` now reads from `src/config/env.ts` instead of doing
   its own dotenv dance (resolves a Week 1 TODO).
 
 ## [0.1.0] — Week 1, day 1-2
 
 ### Added
+
 - Project skeleton, `package.json`, `tsconfig.json` (strict).
 - `playwright.config.ts` — 6 projects: chromium, firefox, webkit, mobile-chrome,
   mobile-safari, api.

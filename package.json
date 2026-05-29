@@ -1,9 +1,16 @@
 {
   "name": "restful-booker-tests",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
-  "description": "End-to-end test automation for Restful-Booker Platform. Playwright + TypeScript with UI, API, visual, and contract tests.",
+  "description": "AI-assisted test automation for Restful-Booker Platform: a Playwright + TypeScript suite with an engineered Anthropic/Claude layer (prompts-as-code, structured outputs, evals, cost tracing).",
   "keywords": [
+    "ai-engineering",
+    "llm",
+    "anthropic",
+    "claude",
+    "prompt-engineering",
+    "llm-evals",
+    "observability",
     "playwright",
     "typescript",
     "qa-automation",
