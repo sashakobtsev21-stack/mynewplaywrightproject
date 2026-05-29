@@ -19,7 +19,10 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-non-null-assertion": "warn",
     "playwright/no-conditional-in-test": "warn",
-    "playwright/expect-expect": "warn",
+    "playwright/expect-expect": [
+      "warn",
+      { "assertFunctionNames": ["expect"], "assertFunctionPatterns": ["^(assert|expect)[A-Z]"] }
+    ],
     "no-console": ["warn", { "allow": ["warn", "error"] }]
   },
   "ignorePatterns": ["node_modules", "dist", "playwright-report", "test-results", "allure-results"]

@@ -87,7 +87,8 @@ test.describe('negative: booking form', () => {
     const [checkin, checkout] = bookingWindow(10, 2);
     await bookingPage.setDates(checkin, checkout);
     await bookingPage.submit();
-    await page.waitForTimeout(500); // let any pending script attempt fire
+    // eslint-disable-next-line playwright/no-wait-for-timeout -- give any injected script a beat to fire before checking
+    await page.waitForTimeout(500);
     const pwned = await page.evaluate(() => (window as unknown as { __pwned?: boolean }).__pwned);
     expect(pwned).toBeFalsy();
   });

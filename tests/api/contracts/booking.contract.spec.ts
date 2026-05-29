@@ -16,6 +16,8 @@ test.describe('contract: /booking', () => {
 
   test('GET /booking/{id} response matches Booking schema', async ({ bookingClient }) => {
     const { bookings } = await bookingClient.list();
+    // Runtime guard: nothing to validate against an empty list, not a disabled test.
+    // eslint-disable-next-line playwright/no-skipped-test
     test.skip(bookings.length === 0, 'no bookings available to validate');
     const sample = await bookingClient.getById(bookings[0].bookingid);
     expect(sample).toMatchSchema(bookingSchema);

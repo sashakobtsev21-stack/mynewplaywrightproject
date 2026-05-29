@@ -52,7 +52,7 @@ test.describe('negative: /booking', () => {
     expect(res.ok()).toBe(false);
   });
 
-  test.skip('POST with payload >1MB returns 413', async ({ request }) => {
+  test.fixme('POST with payload >1MB returns 413', async ({ request }) => {
     // The demo doesn't surface 413 consistently — sometimes 500, sometimes truncates silently.
     // Re-enable when we can pin down behaviour locally with docker.
     const huge = 'x'.repeat(1_100_000);

@@ -38,15 +38,16 @@ test.describe('@perf home page', () => {
     // expect.soft so we collect all metrics in one report, even if budgets miss
     expect.soft(metrics.domContentLoadedMs).toBeLessThan(BUDGETS.domContentLoadedMs);
     expect.soft(metrics.loadCompleteMs).toBeLessThan(BUDGETS.loadCompleteMs);
-    if (metrics.fcpMs > 0) {
-      expect.soft(metrics.fcpMs).toBeLessThan(BUDGETS.fcpMs);
-    }
+    // FCP is occasionally not reported (-1); clamp to 0 so a missing sample
+    // never fails the budget, instead of branching inside the test.
+    expect.soft(Math.max(metrics.fcpMs, 0)).toBeLessThan(BUDGETS.fcpMs);
   });
 
   test('LCP for above-the-fold content', async ({ page }, testInfo) => {
     await page.goto('/', { waitUntil: 'load' });
 
-    // Wait a bit so largest-contentful-paint observer has a chance to settle
+    // Wait a bit so largest-contentful-paint observer has a chance to settle.
+    // eslint-disable-next-line playwright/no-wait-for-timeout -- LCP needs a real settle window, not an element to await
     await page.waitForTimeout(1_500);
 
     const lcp = await page.evaluate(() => {
@@ -70,8 +71,7 @@ test.describe('@perf home page', () => {
       metrics: { lcpMs: lcp },
     });
 
-    if (lcp > 0) {
-      expect(lcp).toBeLessThan(4_500);
-    }
+    // LCP can be unreported (-1); clamp so a missing sample doesn't fail the budget.
+    expect(Math.max(lcp, 0)).toBeLessThan(4_500);
   });
 });

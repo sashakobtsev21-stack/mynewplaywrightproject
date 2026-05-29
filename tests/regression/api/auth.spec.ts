@@ -23,6 +23,8 @@ test.describe('auth API', () => {
     expect(ok).toBe(false);
   });
 
+  // The await not rejecting is the assertion here; the endpoint returns no body.
+  // eslint-disable-next-line playwright/expect-expect
   test('logout does not throw on a valid token', async ({ authClient }) => {
     const { token } = await authClient.login({
       username: env.ADMIN_USERNAME,
