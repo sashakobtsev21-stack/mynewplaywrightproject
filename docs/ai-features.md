@@ -25,14 +25,16 @@ have to set it — the suite runs without AI just fine).
 
 Sonnet 4.5 pricing at the time of writing, rough per-call estimates:
 
-| Operation                            | Cost / call    |
-| ------------------------------------ | -------------- |
-| Test generation (1 spec)             | $0.01 – $0.03  |
-| Failure analysis (text + screenshot) | $0.02 – $0.05  |
-| Data generation (5 records)          | $0.005         |
+| Operation                            | Cost / call   |
+| ------------------------------------ | ------------- |
+| Test generation (1 spec)             | $0.01 – $0.03 |
+| Failure analysis (text + screenshot) | $0.02 – $0.05 |
+| Data generation (5 records)          | $0.005        |
 
 Cache hits in the data generator are free. Run the full test suite a few
-hundred times — AI helpers stay below a few dollars a month.
+hundred times — AI helpers stay below a few dollars a month. Every call is
+traced with its real token count and cost; `npm run ai:budget` totals it (see
+[Observability & cost](#observability--cost) below).
 
 ---
 
@@ -159,8 +161,67 @@ To force a refresh, delete the cache file (or the whole directory).
 2. Cache hit → cached value.
 3. Claude call fails (network, rate limit, parse error) → faker, logged at warn.
 
+Before caching, the parsed output is validated with a zod schema (strict, with a
+looser fallback) and a truncated JSON array is recovered to its last complete
+element. So a cached result is always schema-valid. Details in
+[ai-layer-design.md](./ai-layer-design.md#structured-outputs).
+
 This means **tests never break because of the AI helper**. If Claude is having
 a bad day, you get faker data and a yellow log line, not a red CI.
+
+---
+
+## Observability & cost
+
+Every call through `callClaude()` appends one line to `logs/ai-traces.jsonl`
+(git-ignored) with timing, tokens, and cost:
+
+```json
+{
+  "trace_id": "3f2a...",
+  "ts": "2026-05-29T16:42:32.151Z",
+  "module": "data-generator",
+  "prompt_name": "data-generator",
+  "prompt_version": 1,
+  "model": "claude-sonnet-4-5",
+  "latency_ms": 842,
+  "input_tokens": 210,
+  "output_tokens": 180,
+  "cost_usd": 0.00333,
+  "success": true
+}
+```
+
+```bash
+npm run ai:budget
+```
+
+reads that log back and prints spend for today / this month / all time, broken
+down by module, against the budget in `.ai-budget.json` (copy from
+`.ai-budget.example.json`). It warns, and exits non-zero, past the alert
+threshold.
+
+## Evals
+
+```bash
+npm run eval:ai
+```
+
+Scores each helper. With `ANTHROPIC_API_KEY` set it scores fresh output; without
+one it scores committed fixtures so the suite runs for free in CI. Metrics:
+generated specs are checked for structure and a real `tsc` compile; generated
+data for schema validity and diversity; analyses with heuristics plus a manual
+rubric. See [evals/README.md](../evals/README.md).
+
+## Safety
+
+User-controlled input (a requirement, a data context, a page's `error-context.md`)
+is wrapped with "treat this as data" instructions, and the prompt loader's
+single-pass substitution stops `{{...}}` injection. Generated code is never
+auto-committed and lands in a git-ignored folder with an `[AI-DRAFT]` header.
+This lowers the risk — it doesn't make the system injection-proof. Treat AI
+output as a draft from an untrusted source. More in
+[ai-layer-design.md](./ai-layer-design.md#safety).
 
 ---
 
@@ -168,8 +229,9 @@ a bad day, you get faker data and a yellow log line, not a red CI.
 
 - **No streaming.** Outputs are small (≤ 2K tokens) — not worth the extra
   plumbing.
-- **No retries.** A single failure falls back where possible (data generator)
-  or surfaces to the user (generator/analyzer).
+- **Retries are built in.** `callClaude()` retries rate limits, 5xx, and
+  transient connection errors with exponential backoff; a 4xx surfaces
+  immediately rather than retrying a request that won't improve.
 - **Trace.zip is opaque.** If you really need step-by-step actions from a
   trace, use `npx playwright show-trace` and copy details by hand for now.
 - **Model drift.** If Anthropic deprecates `claude-sonnet-4-5`, point
