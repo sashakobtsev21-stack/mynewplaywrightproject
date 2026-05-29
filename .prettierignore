@@ -7,3 +7,7 @@ allure-report
 coverage
 *.lock
 package-lock.json
+
+# Prompt files are artifacts with a fixed input/output contract — keep them
+# byte-stable instead of letting prettier reflow the template body.
+src/ai/prompts

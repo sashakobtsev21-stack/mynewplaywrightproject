@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type Anthropic from '@anthropic-ai/sdk';
 import { aiLogger, extractText, getClient, isAiEnabled, MODEL } from './anthropic-client';
+import { loadPrompt } from './prompt-loader';
 
 const OUT_DIR = 'ai-analysis';
 
@@ -73,23 +74,11 @@ export async function analyze(ctx: FailureContext): Promise<string> {
 }
 
 function buildPrompt(ctx: FailureContext): string {
-  return `You are a Senior QA Automation Engineer debugging a Playwright test failure.
-
-Failed test folder: ${ctx.testDir}
-
-Error context (DOM snapshot Playwright captured at the moment of failure):
-${ctx.errorContextMd ?? '<error-context.md not found>'}
-
-Spec source:
-${ctx.specSource ?? '<spec source not provided>'}
-
-[A screenshot of the page at failure may be attached.]
-
-Provide a concise markdown response with:
-1. **Most likely root cause** — 1-2 sentences.
-2. **Next steps** — 2-3 concrete actions to confirm/fix.
-
-Be direct. No fluff. No restating the obvious.`;
+  return loadPrompt('failure-analyzer').render({
+    testDir: ctx.testDir,
+    errorContext: ctx.errorContextMd ?? '<error-context.md not found>',
+    specSource: ctx.specSource ?? '<spec source not provided>',
+  });
 }
 
 function formatLocalAnalysis(ctx: FailureContext): string {

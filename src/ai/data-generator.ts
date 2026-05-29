@@ -2,11 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { aiLogger, extractText, getClient, isAiEnabled, MODEL } from './anthropic-client';
+import { loadPrompt } from './prompt-loader';
 import { bookingFactory, guestFactory } from '../fixtures/data-factory';
-import type {
-  CreateBookingPayload,
-  GuestContact,
-} from '../api/types/booking.types';
+import type { CreateBookingPayload, GuestContact } from '../api/types/booking.types';
 
 export type AiKind = 'booking' | 'guest';
 
@@ -100,17 +98,12 @@ export class AiDataGenerator {
       return cached as ResultMap[K][];
     }
 
-    const prompt = `Generate ${count} realistic test data record(s) for kind "${kind}".${
-      opts.context ? `\n\nContext: ${opts.context}` : ''
-    }
-
-Return ONLY a JSON array of objects matching this TypeScript shape:
-${SHAPES[kind]}
-
-Rules:
-- Use plausible real-world data (real-sounding names, valid email format, sensible phone numbers).
-- Dates must be in the future relative to today.
-- No prose, no markdown, no code fences. Just the JSON array.`;
+    const prompt = loadPrompt('data-generator').render({
+      count: String(count),
+      kind,
+      shape: SHAPES[kind],
+      context: opts.context ? `\n\nContext: ${opts.context}` : '',
+    });
 
     try {
       const client = getClient();
@@ -125,7 +118,10 @@ Rules:
       return parsed as ResultMap[K][];
     } catch (err) {
       // Any failure -> faker. Tests still need to run.
-      aiLogger.warn({ err: err instanceof Error ? err.message : err }, 'AI generation failed, falling back to faker');
+      aiLogger.warn(
+        { err: err instanceof Error ? err.message : err },
+        'AI generation failed, falling back to faker',
+      );
       return fallbackFactory(kind, count);
     }
   }

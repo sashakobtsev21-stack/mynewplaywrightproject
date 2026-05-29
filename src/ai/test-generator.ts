@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { aiLogger, extractText, getClient, isAiEnabled, MODEL } from './anthropic-client';
+import { loadPrompt } from './prompt-loader';
 
 export type TestKind = 'ui' | 'api';
 
@@ -47,24 +48,11 @@ function collectProjectContext(kind: TestKind): string {
 }
 
 function buildPrompt(requirement: string, kind: TestKind): string {
-  return `You are a Senior QA Automation Engineer working in a Playwright + TypeScript project.
-
-Write a DRAFT test for the following requirement. Output TypeScript code ONLY — no markdown, no code fences, no commentary.
-
-Requirement: ${requirement}
-Test type: ${kind}
-
-${collectProjectContext(kind)}
-
-Conventions to follow:
-- import { test, expect } from '../../src/fixtures/playwright-fixtures'
-- Use existing POMs / clients shown above. Do not invent new ones.
-- Write 1-3 test() blocks inside a single describe()
-- Use realistic data via src/fixtures/data-factory when relevant
-- Add inline comments where you are GUESSING a selector or assumption
-- Keep it under ~100 lines
-
-Output:`;
+  return loadPrompt('test-generator').render({
+    requirement,
+    kind,
+    projectContext: collectProjectContext(kind),
+  });
 }
 
 export async function generateTest(requirement: string, kind: TestKind): Promise<string> {
