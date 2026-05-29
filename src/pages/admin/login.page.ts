@@ -9,7 +9,6 @@ export class AdminLoginPage extends BasePage {
   readonly usernameInput: Locator;
   readonly passwordInput: Locator;
   readonly submitButton: Locator;
-  readonly logoutButton: Locator;
   readonly errorMessage: Locator;
 
   constructor(page: Page) {
@@ -18,7 +17,6 @@ export class AdminLoginPage extends BasePage {
     this.usernameInput = page.getByLabel(/username/i).or(page.locator('#username'));
     this.passwordInput = page.getByLabel(/password/i).or(page.locator('#password'));
     this.submitButton = page.getByRole('button', { name: /login/i });
-    this.logoutButton = page.getByRole('button', { name: /logout/i });
     this.errorMessage = page.locator('.alert-danger, [role="alert"]').first();
   }
 
@@ -54,9 +52,9 @@ export class AdminLoginPage extends BasePage {
   }
 
   async expectLoggedIn(): Promise<void> {
-    // Assert a positive signal — the Logout button on the admin landing — rather
-    // than the absence of the Login button. The landing replaces the form after
-    // a navigation to /admin/rooms, so give it room to render.
-    await expect(this.logoutButton).toBeVisible({ timeout: 10_000 });
+    // A successful login navigates to the admin landing. Assert the route, not a
+    // nav element: on mobile widths the Logout button collapses into a toggler
+    // and isn't "visible" even though login succeeded. The URL is viewport-proof.
+    await expect(this.page).toHaveURL(/\/admin\/rooms/, { timeout: 10_000 });
   }
 }
