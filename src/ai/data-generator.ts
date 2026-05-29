@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import { aiLogger, extractText, getClient, isAiEnabled, MODEL } from './anthropic-client';
+import { aiLogger, callClaude, extractText, isAiEnabled } from './anthropic-client';
 import { loadPrompt } from './prompt-loader';
 import { parseRecords } from './structured';
 import { RECORD_SCHEMAS } from './schemas';
@@ -95,10 +95,8 @@ export class AiDataGenerator {
     });
 
     try {
-      const client = getClient();
       aiLogger.info({ kind, count }, 'calling claude for data generation');
-      const resp = await client.messages.create({
-        model: MODEL,
+      const resp = await callClaude({
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }],
       });

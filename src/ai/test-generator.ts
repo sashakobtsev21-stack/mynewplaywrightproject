@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { aiLogger, extractText, getClient, isAiEnabled, MODEL } from './anthropic-client';
+import { aiLogger, callClaude, extractText, isAiEnabled } from './anthropic-client';
 import { loadPrompt } from './prompt-loader';
 
 export type TestKind = 'ui' | 'api';
@@ -61,9 +61,7 @@ export async function generateTest(requirement: string, kind: TestKind): Promise
   }
   aiLogger.info({ requirement, kind }, 'generating draft spec');
 
-  const client = getClient();
-  const resp = await client.messages.create({
-    model: MODEL,
+  const resp = await callClaude({
     max_tokens: 2048,
     messages: [{ role: 'user', content: buildPrompt(requirement, kind) }],
   });

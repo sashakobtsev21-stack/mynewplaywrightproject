@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type Anthropic from '@anthropic-ai/sdk';
-import { aiLogger, extractText, getClient, isAiEnabled, MODEL } from './anthropic-client';
+import { aiLogger, callClaude, extractText, isAiEnabled } from './anthropic-client';
 import { loadPrompt } from './prompt-loader';
 
 const OUT_DIR = 'ai-analysis';
@@ -52,7 +52,6 @@ export async function analyze(ctx: FailureContext): Promise<string> {
     return formatLocalAnalysis(ctx);
   }
 
-  const client = getClient();
   const userContent: Anthropic.ContentBlockParam[] = [{ type: 'text', text: buildPrompt(ctx) }];
 
   if (ctx.screenshotPath && fs.existsSync(ctx.screenshotPath)) {
@@ -65,8 +64,7 @@ export async function analyze(ctx: FailureContext): Promise<string> {
 
   aiLogger.info({ dir: ctx.testDir, hasScreenshot: !!ctx.screenshotPath }, 'analyzing failure');
 
-  const resp = await client.messages.create({
-    model: MODEL,
+  const resp = await callClaude({
     max_tokens: 1024,
     messages: [{ role: 'user', content: userContent }],
   });
