@@ -1,0 +1,47 @@
+[
+  {
+    "roomid": 1,
+    "firstname": "Mateo",
+    "lastname": "Fernandez",
+    "email": "mateo.fernandez@globex.com",
+    "phone": "447700900112",
+    "depositpaid": true,
+    "bookingdates": { "checkin": "2026-09-14", "checkout": "2026-09-19" }
+  },
+  {
+    "roomid": 2,
+    "firstname": "Hannah",
+    "lastname": "Okafor",
+    "email": "h.okafor@meridian-trade.com",
+    "phone": "447700900213",
+    "depositpaid": false,
+    "bookingdates": { "checkin": "2026-10-02", "checkout": "2026-10-06" }
+  },
+  {
+    "roomid": 1,
+    "firstname": "Sven",
+    "lastname": "Larsson",
+    "email": "sven.larsson@nordkapp.se",
+    "phone": "447700900314",
+    "depositpaid": true,
+    "bookingdates": { "checkin": "2026-11-11", "checkout": "2026-11-15" }
+  },
+  {
+    "roomid": 3,
+    "firstname": "Priya",
+    "lastname": "Nair",
+    "email": "priya.nair@avanti-labs.in",
+    "phone": "447700900415",
+    "depositpaid": true,
+    "bookingdates": { "checkin": "2026-09-28", "checkout": "2026-10-03" }
+  },
+  {
+    "roomid": 2,
+    "firstname": "Diego",
+    "lastname": "Costa",
+    "email": "diego.costa@portalegre.pt",
+    "phone": "447700900516",
+    "depositpaid": false,
+    "bookingdates": { "checkin": "2026-12-01", "checkout": "2026-12-05" }
+  }
+]

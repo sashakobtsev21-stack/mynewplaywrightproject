@@ -18,6 +18,6 @@
     "baseUrl": "./",
     "types": ["node"]
   },
-  "include": ["src/**/*", "tests/**/*", "scripts/**/*", "playwright.config.ts"],
+  "include": ["src/**/*", "tests/**/*", "scripts/**/*", "evals/**/*", "playwright.config.ts"],
   "exclude": ["node_modules", "dist", "test-results", "playwright-report", "allure-results"]
 }

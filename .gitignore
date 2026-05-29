@@ -53,6 +53,9 @@ performance-results/
 # Per-developer AI budget config (copy from .ai-budget.example.json)
 .ai-budget.json
 
+# Per-run eval output
+evals/results/
+
 # Local-only files (must never be committed)
 scripts/init-git-history.ps1
 docs/simulated-issues.md

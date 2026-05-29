@@ -1,0 +1,32 @@
+[
+  {
+    "firstname": "Mateo",
+    "lastname": "Fernandez",
+    "email": "mateo.fernandez@globex.com",
+    "phone": "447700900112"
+  },
+  {
+    "firstname": "Hannah",
+    "lastname": "Okafor",
+    "email": "h.okafor@meridian-trade.com",
+    "phone": "447700900213"
+  },
+  {
+    "firstname": "Sven",
+    "lastname": "Larsson",
+    "email": "sven.larsson@nordkapp.se",
+    "phone": "447700900314"
+  },
+  {
+    "firstname": "Priya",
+    "lastname": "Nair",
+    "email": "priya.nair@avanti-labs.in",
+    "phone": "447700900415"
+  },
+  {
+    "firstname": "Diego",
+    "lastname": "Costa",
+    "email": "diego.costa@portalegre.pt",
+    "phone": "447700900516"
+  }
+]
