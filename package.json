@@ -45,7 +45,8 @@
     "allure:generate": "bash scripts/publish-allure.sh",
     "allure:serve": "SERVE=1 bash scripts/publish-allure.sh",
     "ai:generate-test": "tsx scripts/generate-test.ts",
-    "ai:analyze": "tsx scripts/analyze-failure.ts"
+    "ai:analyze": "tsx scripts/analyze-failure.ts",
+    "ai:budget": "tsx scripts/ai-budget.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

@@ -50,6 +50,9 @@ cache/ai-data/
 tests/_generated/
 performance-results/
 
+# Per-developer AI budget config (copy from .ai-budget.example.json)
+.ai-budget.json
+
 # Local-only files (must never be committed)
 scripts/init-git-history.ps1
 docs/simulated-issues.md
