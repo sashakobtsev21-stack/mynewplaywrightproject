@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Branding",
+  "type": "object",
+  "required": ["name", "description", "directions", "logoUrl", "map", "address", "contact"],
+  "properties": {
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "directions": { "type": "string" },
+    "logoUrl": { "type": "string" },
+    "map": {
+      "type": "object",
+      "required": ["latitude", "longitude"],
+      "properties": {
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" }
+      }
+    },
+    "address": {
+      "type": "object",
+      "required": ["line1", "line2", "postTown", "county", "postCode"],
+      "properties": {
+        "line1": { "type": "string" },
+        "line2": { "type": "string" },
+        "postTown": { "type": "string" },
+        "county": { "type": "string" },
+        "postCode": { "type": "string" }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "required": ["name", "phone", "email"],
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" }
+      }
+    }
+  }
+}

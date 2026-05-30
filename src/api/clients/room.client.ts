@@ -50,4 +50,14 @@ export class RoomClient extends BaseClient {
     const { rooms } = await this.list();
     return rooms.find((r) => r.roomName === roomName);
   }
+
+  /**
+   * Strict variant of findByName — throws instead of returning undefined, so a
+   * test that just created a room can resolve its id without a branch.
+   */
+  async idByName(roomName: string): Promise<number> {
+    const room = await this.findByName(roomName);
+    if (!room) throw new Error(`no room found with name "${roomName}"`);
+    return room.roomid;
+  }
 }

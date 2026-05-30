@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ReportResponse",
+  "type": "object",
+  "required": ["report"],
+  "properties": {
+    "report": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["start", "end", "title"],
+        "properties": {
+          "start": { "type": "string", "format": "date" },
+          "end": { "type": "string", "format": "date" },
+          "title": { "type": "string" }
+        }
+      }
+    }
+  }
+}
