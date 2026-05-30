@@ -14,3 +14,18 @@ export interface Room {
 export interface RoomListResponse {
   rooms: Room[];
 }
+
+/** Body accepted by POST/PUT /room. The server assigns roomid on create. */
+export interface RoomPayload {
+  roomName: string;
+  type: RoomType;
+  accessible: boolean;
+  description: string;
+  image: string;
+  features: string[];
+  roomPrice: number;
+}
+
+export interface CreateRoomResponse {
+  success: boolean;
+}
