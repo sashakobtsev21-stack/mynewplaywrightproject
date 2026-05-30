@@ -11,6 +11,9 @@ import { AdminLoginPage } from '../pages/admin/login.page';
 import { AuthClient } from '../api/clients/auth.client';
 import { BookingClient } from '../api/clients/booking.client';
 import { RoomClient } from '../api/clients/room.client';
+import { MessageClient } from '../api/clients/message.client';
+import { ReportClient } from '../api/clients/report.client';
+import { BrandingClient } from '../api/clients/branding.client';
 
 import { childLogger } from '../utils/logger';
 import { env } from '../config/env';
@@ -25,6 +28,9 @@ type ApiFixtures = {
   authClient: AuthClient;
   bookingClient: BookingClient;
   roomClient: RoomClient;
+  messageClient: MessageClient;
+  reportClient: ReportClient;
+  brandingClient: BrandingClient;
 };
 
 type WorkerFixtures = {
@@ -58,6 +64,15 @@ export const test = base.extend<PageFixtures & ApiFixtures & UtilFixtures, Worke
   },
   roomClient: async ({ request }, use) => {
     await use(new RoomClient(request));
+  },
+  messageClient: async ({ request }, use) => {
+    await use(new MessageClient(request));
+  },
+  reportClient: async ({ request }, use) => {
+    await use(new ReportClient(request));
+  },
+  brandingClient: async ({ request }, use) => {
+    await use(new BrandingClient(request));
   },
 
   adminToken: [

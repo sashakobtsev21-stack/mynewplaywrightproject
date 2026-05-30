@@ -22,4 +22,5 @@ export const API = {
   room: `${API_PREFIX}/room`,
   message: `${API_PREFIX}/message`,
   report: `${API_PREFIX}/report`,
+  branding: `${API_PREFIX}/branding`,
 } as const;
