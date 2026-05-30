@@ -70,7 +70,9 @@ export interface CallOptions {
   meta?: CallMeta;
 }
 
-async function sendWithRetry(
+// Exported so unit tests can drive the backoff loop with a fake client; the
+// production entry point is still callClaude().
+export async function sendWithRetry(
   client: Anthropic,
   params: Anthropic.MessageCreateParamsNonStreaming,
   retry: RetryConfig,
