@@ -23,6 +23,17 @@ export const specCases: SpecCase[] = [
     requirement: 'GET /room returns a non-empty list of rooms with an id and name',
     kind: 'api',
   },
+  {
+    id: 'admin-create-room-ui',
+    requirement: 'Admin can create a room from the rooms admin page and see it listed',
+    kind: 'ui',
+  },
+  {
+    id: 'contact-message-api',
+    requirement:
+      'POST /message stores a contact message and it appears in the admin inbox with read=false',
+    kind: 'api',
+  },
 ];
 
 export interface DataCase {
