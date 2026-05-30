@@ -2,7 +2,7 @@ import { test, expect } from '../../../src/fixtures/playwright-fixtures';
 import { HomePage } from '../../../src/pages/home.page';
 
 test.describe('admin navigation out of the portal', () => {
-  test.beforeEach(async ({ adminLoginPage }) => {
+  test.beforeEach(async ({ adminLoginPage, page }) => {
     // eslint-disable-next-line playwright/no-skipped-test
     test.skip(
       test.info().project.name.startsWith('mobile'),
@@ -11,11 +11,18 @@ test.describe('admin navigation out of the portal', () => {
     await adminLoginPage.open();
     await adminLoginPage.loginAsAdmin();
     await adminLoginPage.expectLoggedIn();
+    // expectLoggedIn only checks the URL, which can still be bouncing between
+    // /admin and /admin/rooms right after login. Wait for the rooms listing so
+    // the SPA has settled before we click a nav control (a click landed during
+    // the bounce is silently lost on WebKit).
+    await expect(page.locator('[data-testid="roomlisting"]').first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('the Front Page link returns to the public site', async ({ page }) => {
     await page.locator('#frontPageLink').click();
-    await expect(page).toHaveURL(/automationintesting\.online\/?($|\?|#)/);
+    await page.waitForURL(/automationintesting\.online\/($|\?|#)/, { timeout: 15_000 });
     const home = new HomePage(page);
     await expect(home.roomCards.first()).toBeVisible({ timeout: 10_000 });
   });
@@ -24,7 +31,7 @@ test.describe('admin navigation out of the portal', () => {
     // Logout redirects to the public home page (not the login form); the nav
     // swaps the Logout button for an "Admin" link to log back in.
     await page.getByRole('button', { name: /logout/i }).click();
-    await expect(page).toHaveURL(/automationintesting\.online\/?($|\?|#)/);
+    await page.waitForURL(/automationintesting\.online\/($|\?|#)/, { timeout: 15_000 });
     await expect(page.getByRole('link', { name: /^admin$/i })).toBeVisible({ timeout: 10_000 });
   });
 });
