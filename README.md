@@ -165,20 +165,20 @@ Full diagram and per-layer notes in **[docs/architecture.md](docs/architecture.m
 
 ### The test suite (the practical use case)
 
-Roughly 68 tests (a few `test.fixme`/`test.skip` — see CHANGELOG for why),
+Roughly 160 tests (a few `test.fixme`/`test.skip` — see CHANGELOG for why),
 organised by purpose so the CI matrix maps cleanly onto folders, plus a node-only
 `unit` project for the AI helpers.
 
-| Folder                  | What it does                                                                       | Count |
-| ----------------------- | ---------------------------------------------------------------------------------- | ----- |
-| `tests/smoke/`          | Quick sanity on home, admin login, API health. Runs on every PR before regression. | 8     |
-| `tests/regression/ui/`  | Full booking flow, contact form, admin login, navigation.                          | 13    |
-| `tests/regression/api/` | Auth + booking CRUD (serial) + list filtering.                                     | 13    |
-| `tests/negative/`       | Bad payloads, missing fields, malformed dates, XSS sanity, unicode, etc.           | 16    |
-| `tests/performance/`    | Navigation timings, FCP, LCP, API response time. Results dumped to JSONL.          | 4     |
-| `tests/visual/`         | Pixel snapshots of home, admin, and forms. Dynamic regions are masked.             | 7     |
-| `tests/api/contracts/`  | AJV-validated auth / room / booking responses against JSON Schemas.                | 7     |
-| `tests/unit/`           | Pure unit tests for the AI layer (loader, schemas, parsing, cost).                 | 20    |
+| Folder                  | What it does                                                                            | Count |
+| ----------------------- | --------------------------------------------------------------------------------------- | ----- |
+| `tests/smoke/`          | Quick sanity on home, admin login, API health. Runs on every PR before regression.      | 8     |
+| `tests/regression/ui/`  | Booking flow, contact form, admin login, navigation, admin rooms/messages/branding.     | 24    |
+| `tests/regression/api/` | Auth + booking CRUD/filtering, room admin CRUD, messages, report, branding, sessions.   | 33    |
+| `tests/negative/`       | Bad payloads, missing fields, auth gates, overlap/unknown-id, XSS sanity, unicode, etc. | 29    |
+| `tests/performance/`    | Navigation timings, FCP, LCP, API response time. Results dumped to JSONL.               | 4     |
+| `tests/visual/`         | Pixel snapshots of home, admin, and forms. Dynamic regions are masked.                  | 7     |
+| `tests/api/contracts/`  | AJV-validated auth / room / booking / message / report / branding responses.            | 12    |
+| `tests/unit/`           | Pure unit tests for the AI layer (loader, schemas, parsing, retry, cost, evals).        | 46    |
 
 ### Quick start
 
@@ -462,19 +462,19 @@ src/ai/  ──►  prompt-loader + prompts/  ──►  callClaude (retry + tra
 
 ### Тестовый набор (практический use-case)
 
-~68 тестов (несколько в `test.fixme`/`test.skip` — причины в CHANGELOG),
+~160 тестов (несколько в `test.fixme`/`test.skip` — причины в CHANGELOG),
 разложены по назначению, плюс node-only проект `unit` для AI-хелперов.
 
-| Папка                   | Что                                                              | Кол-во |
-| ----------------------- | ---------------------------------------------------------------- | ------ |
-| `tests/smoke/`          | Базовая проверка главной, админ-логина, API health.              | 8      |
-| `tests/regression/ui/`  | Флоу бронирования, форма обратной связи, админ-логин, навигация. | 13     |
-| `tests/regression/api/` | Auth + booking CRUD (serial) + фильтрация.                       | 13     |
-| `tests/negative/`       | Невалидные payload, пропущенные поля, даты, XSS-санити, unicode. | 16     |
-| `tests/performance/`    | Тайминги навигации, FCP, LCP, время ответа API.                  | 4      |
-| `tests/visual/`         | Пиксельные снапшоты с масками на динамику.                       | 7      |
-| `tests/api/contracts/`  | AJV-валидация ответов по JSON Schema.                            | 7      |
-| `tests/unit/`           | Unit-тесты AI-слоя (загрузчик, схемы, парсинг, стоимость).       | 20     |
+| Папка                   | Что                                                                            | Кол-во |
+| ----------------------- | ------------------------------------------------------------------------------ | ------ |
+| `tests/smoke/`          | Базовая проверка главной, админ-логина, API health.                            | 8      |
+| `tests/regression/ui/`  | Бронирование, форма связи, админ-логин, навигация, номера/сообщения/бренд.     | 24     |
+| `tests/regression/api/` | Auth + booking CRUD/фильтрация, CRUD номеров, сообщения, отчёт, бренд.         | 33     |
+| `tests/negative/`       | Невалидные payload, пропуски, auth-гейты, overlap/unknown-id, XSS, unicode.    | 29     |
+| `tests/performance/`    | Тайминги навигации, FCP, LCP, время ответа API.                                | 4      |
+| `tests/visual/`         | Пиксельные снапшоты с масками на динамику.                                     | 7      |
+| `tests/api/contracts/`  | AJV-валидация ответов по JSON Schema (auth/room/booking/message/report/бренд). | 12     |
+| `tests/unit/`           | Unit-тесты AI-слоя (загрузчик, схемы, парсинг, retry, стоимость, evals).       | 46     |
 
 ### Quick start
 

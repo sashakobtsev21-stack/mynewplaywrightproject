@@ -12,6 +12,42 @@ No public releases yet — everything is pre-1.0.
 - Slack/Telegram nightly failure notifications
 - Performance trending dashboard from `performance-results/*.jsonl`
 
+## [0.9.0] — 2026-05-30
+
+Broadened the test suite across the admin-only and previously-uncovered
+endpoints (rooms, messages, report, branding) and deepened the AI-layer unit
+tests.
+
+### Added
+
+- Admin room management API coverage (create / update / delete under the admin
+  token), with typed `RoomClient` mutations and a `roomFactory`.
+- Contact message API coverage (create, inbox listing, count, detail, mark-read,
+  delete) via a new typed `MessageClient`.
+- Occupancy report and branding API coverage via `ReportClient` / `BrandingClient`.
+- Booking list filter edges (unknown room → empty, room/name scoping) and auth
+  session validation edges.
+- Contract tests and JSON Schemas for the message list/detail, report, branding,
+  and a created-room round-trip.
+- Negative API coverage: room/message/report auth (401/403), invalid room
+  payload (400), unknown ids (404), and a booking date overlap (409).
+- Admin UI specs and Page Objects: rooms table and create-room form, message
+  inbox, branding page, and navigation out of the portal (Front Page, logout).
+  Nav-dependent specs skip on mobile widths where the nav collapses.
+- AI-layer unit tests: retry/backoff on a fake client, `isRetryable`, JSON
+  recovery edges, budget summarize edges, and an eval-dataset integrity guard.
+  `sendWithRetry` is exported so the backoff loop can be driven under test.
+- Two eval spec cases (admin room creation, contact message API).
+
+### Changed
+
+- README test-suite table refreshed (~160 tests across the matrix).
+
+### Notes
+
+- The live demo does not invalidate a token on logout; that assertion is kept as
+  a documented `test.fixme` rather than a passing test.
+
 ## [0.8.0] — 2026-05-29
 
 Repositioned toward AI engineering: the AI layer grew from three thin helpers

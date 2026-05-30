@@ -1,6 +1,6 @@
 {
   "name": "restful-booker-tests",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "description": "AI-assisted test automation for Restful-Booker Platform: a Playwright + TypeScript suite with an engineered Anthropic/Claude layer (prompts-as-code, structured outputs, evals, cost tracing).",
   "keywords": [
