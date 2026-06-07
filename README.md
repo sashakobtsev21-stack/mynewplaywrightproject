@@ -21,7 +21,8 @@
 
 ### What this project demonstrates
 
-If you're hiring for AI engineering, these are the parts worth a look:
+If you're hiring for AI engineering, these are the parts worth a look — or skim the
+**[one-page engineering report](https://htmlpreview.github.io/?https://github.com/sashakobtsev21-stack/mynewplaywrightproject/blob/main/docs/report.html)**:
 
 - **Prompts as code** — every prompt is a versioned markdown file with a declared
   input/output contract, loaded and templated through one small loader.
@@ -313,7 +314,12 @@ CHANGELOG entry and matching commits.
 - **Week 4** — first cut of the three Anthropic helpers, Dockerfile, docs.
 - **Since** — the AI engineering pass: prompts moved to versioned files, zod
   validation + JSON recovery, a retry/trace/cost wrapper, an eval suite, and
-  unit tests for the helpers. This is the work the repo now leads with.
+  unit tests for the helpers.
+- **Latest** — the adaptation pass (see the [report](docs/report.html) and the
+  [plan](docs/ai-engineer-adaptation-plan.md)): prompt-injection + PII safety, a
+  multi-provider `LLMProvider`, an agentic tool-use analyzer, an LLM-as-judge eval
+  gate wired into CI, OpenTelemetry trace export, and BM25 retrieval grounding.
+  This is the work the repo now leads with.
 
 ### Lessons learned
 
@@ -337,10 +343,9 @@ Things I'd put on a "before you start" note for past me:
 
 Honest backlog, rough priority order:
 
-- A second provider (OpenAI / local via Ollama) behind a small `LLMProvider`
-  interface, with a quality/cost comparison.
-- A Langfuse exporter (the OTLP/HTTP exporter already ships traces to any OpenTelemetry collector; Langfuse would be a second `TraceExporter`).
-- Tool-use version of the failure analyzer that reads files/traces itself.
+- A Langfuse exporter — a second `TraceExporter` alongside the OTLP/HTTP one.
+- An embeddings-based retriever swapped in for BM25 behind the same ranked shape.
+- A CI hook running the evals only on PRs that touch `src/ai/`.
 - `storageState` for admin UI sessions.
 - Mini-dashboard from `performance-results/*.jsonl`.
 - Real `trace.zip` parsing in the failure analyzer (currently uses the extracted folder).
@@ -360,7 +365,8 @@ License: [MIT](LICENSE).
 
 ### Что показывает этот проект
 
-Если вы смотрите на позицию AI engineer — вот на что стоит взглянуть:
+Если вы смотрите на позицию AI engineer — вот на что стоит взглянуть (или загляните в
+**[одностраничный отчёт](https://htmlpreview.github.io/?https://github.com/sashakobtsev21-stack/mynewplaywrightproject/blob/main/docs/report.html)**):
 
 - **Промпты как код** — каждый промпт это версионированный markdown-файл с
   объявленным контрактом вход/выход, через единый загрузчик.

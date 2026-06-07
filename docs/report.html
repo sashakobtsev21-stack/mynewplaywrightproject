@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-assisted Test Automation — Engineering Report</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --panel-2: #1c232c;
+        --border: #2d333b;
+        --text: #e6edf3;
+        --muted: #9aa7b2;
+        --accent: #d97757; /* Anthropic clay */
+        --accent-2: #3fb6a8; /* teal */
+        --ok: #3fb950;
+        --warn: #d29922;
+        --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: radial-gradient(1200px 600px at 80% -10%, #1a2230 0%, var(--bg) 55%);
+        color: var(--text);
+        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      a { color: var(--accent-2); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      code { font-family: var(--mono); font-size: 0.86em; background: #11161d; border: 1px solid var(--border); border-radius: 5px; padding: 0.1em 0.4em; color: #cdd6e0; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px 80px; }
+
+      header.hero { padding: 64px 0 28px; border-bottom: 1px solid var(--border); }
+      .eyebrow { color: var(--accent); font-family: var(--mono); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
+      h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.12; margin: 10px 0 12px; }
+      h1 .sub { color: var(--muted); font-weight: 400; }
+      .lede { color: var(--muted); max-width: 760px; font-size: 18px; }
+      .meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+      .pill { font-family: var(--mono); font-size: 12px; color: var(--muted); background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 5px 11px; }
+      .pill b { color: var(--text); }
+
+      h2 { font-size: 24px; margin: 52px 0 6px; }
+      h2 .n { color: var(--accent); font-family: var(--mono); font-size: 15px; margin-right: 8px; }
+      .section-note { color: var(--muted); margin: 0 0 22px; }
+
+      .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+      .card { background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border: 1px solid var(--border); border-radius: 12px; padding: 16px 16px 14px; }
+      .card h3 { margin: 0 0 6px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+      .card h3 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+      .card p { margin: 0 0 8px; color: var(--muted); font-size: 14.5px; }
+      .card .files { font-family: var(--mono); font-size: 12px; color: #7d8893; }
+
+      .timeline { border-left: 2px solid var(--border); margin-left: 8px; padding-left: 22px; }
+      .step { position: relative; padding: 6px 0 22px; }
+      .step::before { content: ""; position: absolute; left: -29px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--bg); }
+      .step h3 { margin: 0 0 4px; font-size: 16px; }
+      .step .sha { font-family: var(--mono); font-size: 12px; color: var(--accent-2); }
+      .step p { margin: 4px 0 0; color: var(--muted); font-size: 14.5px; }
+
+      .flow { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+      pre { margin: 0; font-family: var(--mono); font-size: 13px; color: #c2ccd6; white-space: pre; }
+
+      table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+      th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+      th { color: var(--muted); font-weight: 600; font-size: 13px; }
+      td .ok { color: var(--ok); }
+      .statgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 20px; }
+      .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+      .stat .num { font-size: 30px; font-weight: 700; }
+      .stat .lab { color: var(--muted); font-size: 13px; }
+      .stat .num.green { color: var(--ok); }
+
+      ul.lean { margin: 6px 0 0; padding-left: 20px; color: var(--muted); }
+      ul.lean li { margin: 5px 0; }
+      footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+      .tag { display: inline-block; font-family: var(--mono); font-size: 11px; color: var(--accent); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; margin-left: 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <div class="eyebrow">Engineering report · AI layer</div>
+        <h1>Restful-Booker Platform<br /><span class="sub">AI-assisted test automation</span></h1>
+        <p class="lede">
+          A Playwright + TypeScript test suite with an engineered Anthropic/Claude layer on top —
+          prompts-as-code, validated structured outputs, retries, an agentic tool-use loop, a
+          multi-provider abstraction, cost &amp; OpenTelemetry tracing, BM25 retrieval grounding, and
+          an eval release gate. The tests are the practical use case; how the AI parts are
+          engineered is the point.
+        </p>
+        <div class="meta">
+          <span class="pill">repo · <b>mynewplaywrightproject</b></span>
+          <span class="pill">tests · <b>~208</b> (unit <b>97</b>)</span>
+          <span class="pill">typecheck · <b class="ok">pass</b></span>
+          <span class="pill">lint · <b>0</b></span>
+          <span class="pill">eval gate · <b>PASS</b></span>
+          <span class="pill">role · <b>AI Engineer</b></span>
+        </div>
+      </header>
+
+      <h2><span class="n">01</span>What the AI layer does now</h2>
+      <p class="section-note">
+        Eleven capabilities, each engineered for real traffic rather than a demo. File references
+        point at <code>src/ai/</code>.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3><span class="dot"></span>Prompts as code</h3>
+          <p>Every prompt is a versioned <code>&lt;name&gt;.v&lt;N&gt;.md</code> with a declared input/output contract; the loader enforces it and substitutes in a single pass (no placeholder smuggling).</p>
+          <div class="files">prompts/ · prompt-loader.ts</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Structured outputs</h3>
+          <p>Model replies are zod-validated: a strict schema, a looser fallback, and recovery for JSON truncated at <code>max_tokens</code>. Nothing unvalidated reaches a test.</p>
+          <div class="files">structured.ts · schemas.ts</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Retrieval grounding (RAG)</h3>
+          <p>The test generator grounds each draft in the existing specs most similar to the requirement, ranked by <b>BM25</b> over the spec corpus — lexical, deterministic, no vector DB.</p>
+          <div class="files">retrieval/bm25.ts</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Agentic tool-use</h3>
+          <p>The failure analyzer also runs as a tool-use loop: the model investigates with <code>list_dir / read_file / grep / view_screenshot</code>, every path sandboxed to the repo root, every tool input zod-validated.</p>
+          <div class="files">agentic-analyzer.ts</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Provider-agnostic</h3>
+          <p>Text helpers go through an <code>LLMProvider</code> interface: Anthropic, or any OpenAI-compatible endpoint (OpenAI, local Ollama / LM Studio) via <code>fetch</code> — switched by <code>LLM_PROVIDER</code>.</p>
+          <div class="files">providers/</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Reliability</h3>
+          <p>One entry point for every call (<code>callClaude</code>) with exponential backoff + jitter, retrying only on rate limits, 5xx, and transient connection errors.</p>
+          <div class="files">anthropic-client.ts</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Observability</h3>
+          <p>Each call writes a JSONL trace (latency, tokens, cost, provider, prompt version) and can also ship as an <b>OpenTelemetry</b> span over OTLP/HTTP to any collector (Jaeger, Tempo, Honeycomb).</p>
+          <div class="files">observability.ts · exporters/</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Cost awareness</h3>
+          <p>Token-based cost per call, a per-developer budget, and <code>npm run ai:budget</code> to total spend across providers from the trace log (local endpoints billed at $0).</p>
+          <div class="files">budget.ts · observability.ts</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Safety</h3>
+          <p>Untrusted inputs (a requirement, a failure's context + screenshot) are fenced as <code>&lt;untrusted_data&gt;</code> with an injection heuristic; secrets/PII are redacted before any trace is persisted.</p>
+          <div class="files">redaction.ts</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Evals &amp; release gate</h3>
+          <p>A suite scores each helper and an <b>LLM-as-judge</b> (haiku) grades analysis quality 1–5; a gate fails CI when thresholds aren't cleared. Runs offline (deterministic) on every PR.</p>
+          <div class="files">evals/ · gate.ts · judge.ts</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Agent team</h3>
+          <p>The repo is developed with eight curated Claude Code subagents (prompt-engineer, AI-safety, code-reviewer, …), a project-specific subset of a larger agent library.</p>
+          <div class="files">.claude/agents/</div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>A clear position on AI in QA</h3>
+          <p>Generated tests carry false confidence; failure analysis is a hypothesis, not a verdict. Validation, traces, and evals exist so output is trusted as far as it's earned — no further.</p>
+          <div class="files">README · evals/README.md</div>
+        </div>
+      </div>
+
+      <h2><span class="n">02</span>How a call flows, end to end</h2>
+      <p class="section-note">Every helper shares one path; reliability, cost, safety, and observability live in one place instead of being copy-pasted.</p>
+      <div class="flow">
+        <pre>requirement ──▶ BM25 retrieve relevant specs ──▶ render versioned prompt
+                                                       (untrusted input fenced)
+                                                              │
+                                                              ▼
+                                              LLMProvider.complete()
+                                       Anthropic  ◀──┴──▶  OpenAI-compatible
+                                                              │
+                              callClaude(): backoff + jitter, scoped retry
+                                                              │
+                              ┌───────────────────────────────┼───────────────┐
+                              ▼                                ▼               ▼
+                    zod-validate output            writeTrace(redacted)   exportTrace()
+                    (strict → loose → recover)      logs/ai-traces.jsonl   OTLP/HTTP span
+                              │                                │
+                              ▼                                ▼
+                       draft / records              npm run ai:budget · Jaeger/Tempo
+
+  failure analyzer (agentic): loop { model → tool_use → executeTool (sandboxed) → tool_result }
+  evals: score helpers → LLM-as-judge (1–5) → gate vs thresholds.json → exit non-zero on miss</pre>
+      </div>
+
+      <h2><span class="n">03</span>The adaptation pass <span class="tag">this engineering work</span></h2>
+      <p class="section-note">
+        Starting from a working AI layer, this pass closed the specific gaps an AI-engineer
+        interview probes. Each sprint shipped to <code>main</code> with tests, docs, and a green gate.
+      </p>
+      <div class="timeline">
+        <div class="step">
+          <h3>Curated agent team + adaptation plan <span class="sha">47f2a98 · ff1f035</span></h3>
+          <p>Eight project-specific Claude Code subagents under <code>.claude/agents/</code> (claude-flow swarm/MCP coupling stripped), plus a prioritized roadmap in <code>docs/ai-engineer-adaptation-plan.md</code>.</p>
+        </div>
+        <div class="step">
+          <h3>P0.1 — LLM safety <span class="sha">e1ccf9d</span></h3>
+          <p>Prompt-injection fencing (prompts → v2), a detection heuristic recorded on the trace, and secret/PII redaction before any trace is persisted. <code>src/ai/redaction.ts</code> + 12 tests.</p>
+        </div>
+        <div class="step">
+          <h3>P1.1 ⭐ — Agentic tool-use analyzer <span class="sha">49b00a7</span></h3>
+          <p>The failure analyzer rewritten as a tool-use loop with a sandboxed filesystem (<code>resolveWithinRoot</code>) and zod-validated tool inputs. <code>--agent</code> flag; 10 tests with a scripted fake client.</p>
+        </div>
+        <div class="step">
+          <h3>P0.2 — Multi-provider abstraction <span class="sha">f8f52d9</span></h3>
+          <p><code>LLMProvider</code> with an Anthropic adapter and a <code>fetch</code>-based OpenAI-compatible provider (OpenAI / Ollama / LM Studio). Unified traces &amp; cost across vendors. 6 tests.</p>
+        </div>
+        <div class="step">
+          <h3>P1.2 — Evals gate + LLM-as-judge <span class="sha">670c16f</span></h3>
+          <p>A pure <code>evaluateGate()</code> against committed thresholds, a haiku judge with a zod verdict, and <code>npm run ai:budget</code>'s sibling <code>eval:ai</code> wired into CI (offline) on every PR. 11 tests.</p>
+        </div>
+        <div class="step">
+          <h3>P1.3 — OpenTelemetry export <span class="sha">4d212b6</span></h3>
+          <p>A pluggable <code>TraceExporter</code> with a hand-built OTLP/HTTP span payload (GenAI semantic conventions + cost), fire-and-forget and non-throwing. 6 tests.</p>
+        </div>
+        <div class="step">
+          <h3>P2.1 — BM25 retrieval grounding <span class="sha">17adfc5</span></h3>
+          <p>Replaced the single static example with a deterministic lexical retriever that grounds each draft in the most relevant existing specs. 6 tests.</p>
+        </div>
+      </div>
+
+      <h2><span class="n">04</span>Quality &amp; status</h2>
+      <div class="statgrid">
+        <div class="stat"><div class="num">~208</div><div class="lab">tests across the matrix</div></div>
+        <div class="stat"><div class="num">97</div><div class="lab">AI-layer unit tests</div></div>
+        <div class="stat"><div class="num green">PASS</div><div class="lab">offline eval gate (CI)</div></div>
+        <div class="stat"><div class="num green">0</div><div class="lab">lint errors · tsc clean</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Layer</th><th>What's covered</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Prompt loader</td><td>frontmatter contract, single-pass substitution</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Structured parsing</td><td>strict/loose, fence-strip, truncation recovery</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Retry / backoff</td><td><code>isRetryable</code>, jitter loop on a fake client</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Cost / budget</td><td>per-model pricing, windowed totals</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Safety</td><td>redaction, injection detection, fence breakout</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Providers</td><td>selection, OpenAI mapping + retry, Anthropic mapping</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Agentic loop</td><td>path sandbox, tool execution, loop + step cap</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Evals gate / judge</td><td>threshold logic, judge-verdict parsing</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Trace export</td><td>OTLP mapping, transport, no-throw contract</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Retrieval</td><td>tokenize, BM25 ranking, top-K</td><td><span class="ok">✓</span></td></tr>
+        </tbody>
+      </table>
+
+      <h2><span class="n">05</span>What's next</h2>
+      <p class="section-note">Open-ended ideas beyond the completed roadmap — none required, all behind existing interfaces.</p>
+      <ul class="lean">
+        <li>A <b>Langfuse</b> exporter — a second <code>TraceExporter</code> alongside OTLP.</li>
+        <li>An <b>embeddings</b> retriever swapped in for BM25 behind the same ranked shape.</li>
+        <li>A CI hook running the evals only on PRs that touch <code>src/ai/</code>.</li>
+        <li><code>storageState</code> for admin UI sessions; a small dashboard from <code>performance-results/*.jsonl</code>.</li>
+        <li>Real <code>trace.zip</code> parsing in the failure analyzer; ESLint v9 flat config.</li>
+      </ul>
+
+      <footer>
+        Generated as a portfolio engineering report. Full write-up:
+        <a href="ai-layer-design.md">ai-layer-design.md</a> ·
+        <a href="ai-features.md">ai-features.md</a> ·
+        <a href="ai-engineer-adaptation-plan.md">adaptation plan</a> ·
+        <a href="../README.md">README</a>. Generated with Claude Code.
+      </footer>
+    </div>
+  </body>
+</html>
