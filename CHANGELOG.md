@@ -10,6 +10,16 @@ No public releases yet — everything is pre-1.0.
 
 ### Added
 
+- Multi-provider AI layer behind a small `LLMProvider` interface
+  (`src/ai/providers/`). The text helpers (data generator, test generator) are now
+  vendor-agnostic, switched by `LLM_PROVIDER`: `AnthropicProvider` (default, wraps
+  `callClaude`) or `OpenAICompatibleProvider` — a `fetch`-based adapter for any
+  OpenAI-compatible `/chat/completions` endpoint (OpenAI, local Ollama / LM Studio,
+  OpenRouter), no extra SDK. Traces gained a `provider` field and `PRICING` gained
+  the GPT-4o / 4.1 families, so `npm run ai:budget` totals spend across vendors
+  (local endpoints billed at $0). The multimodal analyzer and the tool-use agent
+  deliberately stay Anthropic-only. New env: `LLM_PROVIDER`, `OPENAI_API_KEY`,
+  `OPENAI_BASE_URL`, `OPENAI_MODEL`. 6 provider unit tests (mocked transport).
 - Agentic (tool-use) failure analyzer (`src/ai/agentic-analyzer.ts`, opt-in via
   `npm run ai:analyze -- --trace <dir> --agent`). The model investigates the
   failure itself with four sandboxed tools — `list_dir` / `read_file` / `grep` /

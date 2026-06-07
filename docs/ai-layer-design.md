@@ -19,6 +19,7 @@ src/ai/
   failure-analyzer.ts   failure artifacts -> root-cause hypothesis (single shot)
   agentic-analyzer.ts   tool-use loop: the model reads/greps the repo itself
   data-generator.ts     typed, validated test records
+  providers/            LLMProvider interface + anthropic / openai adapters
 ```
 
 Everything sits behind `isAiEnabled()`. With no key the data generator returns
@@ -67,6 +68,33 @@ Decisions:
 - **Untrusted by default.** The system prompt fences file/screenshot contents as
   data; reads are injection-scanned. The `send` function is injectable, so the
   loop is unit-tested with a scripted fake client (no network).
+
+## Provider abstraction (multi-vendor)
+
+The text helpers (data generator, test generator) don't import the Anthropic SDK
+directly — they call an `LLMProvider` (`src/ai/providers/`). The vendor is chosen
+by `LLM_PROVIDER`:
+
+- `AnthropicProvider` — the default; a thin adapter over `callClaude()`, so it
+  keeps the same retry / backoff / trace path.
+- `OpenAICompatibleProvider` — `fetch` to any `/chat/completions` endpoint, which
+  covers OpenAI, a local Ollama / LM Studio server (set `OPENAI_BASE_URL`),
+  OpenRouter, etc. — no extra SDK. It runs its own retry and writes the same trace
+  shape with `provider: "openai"` and `cost_usd` from the same `PRICING` table
+  (local endpoints are billed at $0).
+
+Decisions:
+
+- **Deliberately partial.** Only the two pure text helpers route through the
+  interface. The multimodal failure analyzer (vision) and the tool-use agent stay
+  on the Anthropic client — those features aren't uniform across vendors, and a
+  one-size interface would be a leaky abstraction. The boundary is explicit.
+- **Observability stays unified.** Every provider writes the same `AiTrace` line
+  (now carrying a `provider` field), so `npm run ai:budget` totals spend across
+  vendors without caring which one served a call.
+- **Testable transport.** Both adapters take an injectable transport (the Anthropic
+  `call` fn / the `fetch` impl), so request→response mapping and retry are
+  unit-tested with no network.
 
 ## Prompts as code
 

@@ -63,6 +63,8 @@ export interface CallMeta {
   module: string;
   promptName?: string;
   promptVersion?: number;
+  /** Which provider served the call — recorded on the trace. */
+  provider?: string;
   /** Set by a caller whose untrusted input tripped the injection heuristic. */
   injectionSuspected?: boolean;
 }
@@ -129,6 +131,7 @@ export async function callClaude(
       prompt_name: opts.meta?.promptName,
       prompt_version: opts.meta?.promptVersion,
       model: withModel.model,
+      provider: opts.meta?.provider ?? 'anthropic',
       input_hash: inputHash,
       latency_ms: Date.now() - start,
       input_tokens: resp.usage.input_tokens,
@@ -146,6 +149,7 @@ export async function callClaude(
       prompt_name: opts.meta?.promptName,
       prompt_version: opts.meta?.promptVersion,
       model: withModel.model,
+      provider: opts.meta?.provider ?? 'anthropic',
       input_hash: inputHash,
       latency_ms: Date.now() - start,
       success: false,

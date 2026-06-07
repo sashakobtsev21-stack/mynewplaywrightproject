@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import { aiLogger, callClaude, extractText, isAiEnabled } from './anthropic-client';
+import { aiLogger } from './anthropic-client';
+import { getProvider } from './providers';
 import { loadPrompt } from './prompt-loader';
 import { parseRecords } from './structured';
 import { RECORD_SCHEMAS } from './schemas';
@@ -74,9 +75,10 @@ function writeCache(key: string, data: unknown): void {
 export class AiDataGenerator {
   async generate<K extends AiKind>(kind: K, opts: AiGenerateOpts = {}): Promise<ResultMap[K][]> {
     const count = opts.count ?? 1;
+    const provider = getProvider();
 
-    if (!isAiEnabled()) {
-      aiLogger.debug({ kind, count }, 'AI disabled, using faker fallback');
+    if (!provider.isConfigured()) {
+      aiLogger.debug({ kind, count, provider: provider.name }, 'AI disabled, using faker fallback');
       return fallbackFactory(kind, count);
     }
 
@@ -96,19 +98,18 @@ export class AiDataGenerator {
     });
 
     try {
-      aiLogger.info({ kind, count }, 'calling claude for data generation');
-      const resp = await callClaude(
-        { max_tokens: 1024, messages: [{ role: 'user', content: prompt }] },
-        {
-          meta: {
-            module: 'data-generator',
-            promptName: dgPrompt.meta.name,
-            promptVersion: dgPrompt.meta.version,
-          },
+      aiLogger.info({ kind, count, provider: provider.name }, 'generating data via LLM provider');
+      const resp = await provider.complete({
+        maxTokens: 1024,
+        messages: [{ role: 'user', text: prompt }],
+        meta: {
+          module: 'data-generator',
+          promptName: dgPrompt.meta.name,
+          promptVersion: dgPrompt.meta.version,
         },
-      );
+      });
       const { strict, loose } = RECORD_SCHEMAS[kind];
-      const { records, usedLoose } = parseRecords(extractText(resp.content), strict, loose);
+      const { records, usedLoose } = parseRecords(resp.text, strict, loose);
       if (usedLoose) {
         aiLogger.warn({ kind }, 'ai output passed only the loose schema, not the strict one');
       }

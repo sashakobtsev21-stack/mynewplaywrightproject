@@ -17,6 +17,12 @@ const schema = z.object({
   ADMIN_USERNAME: z.string().min(1).default('admin'),
   ADMIN_PASSWORD: z.string().min(1).default('password'),
   ANTHROPIC_API_KEY: z.string().optional(),
+  // Which LLM vendor the text helpers use. `openai` covers any OpenAI-compatible
+  // endpoint (OpenAI, a local Ollama / LM Studio server, OpenRouter, ...).
+  LLM_PROVIDER: z.enum(['anthropic', 'openai']).default('anthropic'),
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
+  OPENAI_MODEL: z.string().default('gpt-4o-mini'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
   CI: z.string().optional(),
 });

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { aiLogger, callClaude, extractText, isAiEnabled } from './anthropic-client';
+import { aiLogger } from './anthropic-client';
+import { getProvider } from './providers';
 import { loadPrompt } from './prompt-loader';
 import { detectInjection, sanitizeUntrusted } from './redaction';
 
@@ -49,10 +50,11 @@ function collectProjectContext(kind: TestKind): string {
 }
 
 export async function generateTest(requirement: string, kind: TestKind): Promise<string> {
-  if (!isAiEnabled()) {
-    throw new Error('ANTHROPIC_API_KEY is not set — cannot generate.');
+  const provider = getProvider();
+  if (!provider.isConfigured()) {
+    throw new Error(`AI provider "${provider.name}" is not configured — cannot generate.`);
   }
-  aiLogger.info({ requirement, kind }, 'generating draft spec');
+  aiLogger.info({ requirement, kind, provider: provider.name }, 'generating draft spec');
 
   // The requirement is free-text from a user/CLI — untrusted. Flag injection for
   // the trace; the v2 prompt fences it as data and sanitize blocks fence breakout.
@@ -65,31 +67,27 @@ export async function generateTest(requirement: string, kind: TestKind): Promise
   }
 
   const prompt = loadPrompt('test-generator');
-  const resp = await callClaude(
-    {
-      max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: prompt.render({
-            requirement: sanitizeUntrusted(requirement),
-            kind,
-            projectContext: collectProjectContext(kind),
-          }),
-        },
-      ],
-    },
-    {
-      meta: {
-        module: 'test-generator',
-        promptName: prompt.meta.name,
-        promptVersion: prompt.meta.version,
-        injectionSuspected: scan.suspected,
+  const resp = await provider.complete({
+    maxTokens: 2048,
+    messages: [
+      {
+        role: 'user',
+        text: prompt.render({
+          requirement: sanitizeUntrusted(requirement),
+          kind,
+          projectContext: collectProjectContext(kind),
+        }),
       },
+    ],
+    meta: {
+      module: 'test-generator',
+      promptName: prompt.meta.name,
+      promptVersion: prompt.meta.version,
+      injectionSuspected: scan.suspected,
     },
-  );
+  });
 
-  const body = extractText(resp.content);
+  const body = resp.text;
   // Strip any stray markdown fences just in case
   const cleaned = body
     .replace(/^```(?:ts|typescript)?\s*\n?/i, '')
