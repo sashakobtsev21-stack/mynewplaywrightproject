@@ -10,6 +10,14 @@ No public releases yet — everything is pre-1.0.
 
 ### Added
 
+- Agentic (tool-use) failure analyzer (`src/ai/agentic-analyzer.ts`, opt-in via
+  `npm run ai:analyze -- --trace <dir> --agent`). The model investigates the
+  failure itself with four sandboxed tools — `list_dir` / `read_file` / `grep` /
+  `view_screenshot` — every path confined to the project root by
+  `resolveWithinRoot()` and every tool input zod-validated. The loop runs through
+  `callClaude()`, so each step is retried and traced; a step cap, read caps, and a
+  grep budget bound cost. New system prompt `failure-analyzer-agent.v1.md` and 10
+  unit tests driving the loop with a fake client (no network).
 - Curated Claude Code agent team under `.claude/agents/` (prompt-engineer,
   typescript-specialist, playwright-qa-engineer, code-reviewer,
   ai-safety-specialist, cost-analyst, security/dependency auditors), adapted from

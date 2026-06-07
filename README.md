@@ -32,6 +32,10 @@ If you're hiring for AI engineering, these are the parts worth a look:
 - **Reliability** — one entry point for every call with exponential backoff +
   jitter, retrying only on rate limits, 5xx, and transient connection errors.
   See [anthropic-client.ts](src/ai/anthropic-client.ts).
+- **Agentic tool-use** — the failure analyzer also runs as a tool-use loop: given
+  read/list/grep/screenshot tools (sandboxed to the repo), the model investigates
+  the failure itself instead of being handed pre-collected context.
+  See [agentic-analyzer.ts](src/ai/agentic-analyzer.ts).
 - **Observability** — each call writes a JSONL trace: latency, tokens, cost,
   prompt name/version, success/error. See [observability.ts](src/ai/observability.ts).
 - **Cost awareness** — token-based cost per call, a per-developer budget, and
@@ -351,6 +355,10 @@ License: [MIT](LICENSE).
   См. [structured.ts](src/ai/structured.ts) и [schemas.ts](src/ai/schemas.ts).
 - **Надёжность** — единая точка вызова с экспоненциальным backoff + jitter, retry
   только на rate limit, 5xx и сетевых сбоях. См. [anthropic-client.ts](src/ai/anthropic-client.ts).
+- **Агентный tool-use** — анализатор падений умеет работать как tool-use цикл: с
+  инструментами read/list/grep/screenshot (в песочнице репозитория) модель сама
+  исследует падение, а не получает заранее собранный контекст.
+  См. [agentic-analyzer.ts](src/ai/agentic-analyzer.ts).
 - **Наблюдаемость** — каждый вызов пишет JSONL-трейс: latency, токены, стоимость,
   имя/версия промпта, success/error. См. [observability.ts](src/ai/observability.ts).
 - **Контроль стоимости** — стоимость по токенам на вызов, бюджет на разработчика,

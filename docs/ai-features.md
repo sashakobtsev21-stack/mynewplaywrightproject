@@ -104,6 +104,20 @@ npm run ai:analyze -- --trace test-results/<...>/trace.zip --spec tests/regressi
 
 Output is also written to `ai-analysis/<timestamp>-<slug>.md` for the record.
 
+### Agentic mode (`--agent`)
+
+```bash
+npm run ai:analyze -- --trace test-results/regression-booking-flow-chromium --agent
+```
+
+Instead of pre-collecting the artefacts, `--agent` runs a tool-use loop
+(`src/ai/agentic-analyzer.ts`): the model is handed `list_dir` / `read_file` /
+`grep` / `view_screenshot` and investigates the failure itself — no `--spec`
+needed, it greps the source on its own. Every path is sandboxed to the project
+root, each step is traced (`module: failure-analyzer-agent`), and the run is
+bounded by a step cap, read caps, and a grep budget. See
+[ai-layer-design.md](./ai-layer-design.md#agentic-analysis-tool-use).
+
 ### What goes in
 
 - `error-context.md` (Playwright writes this for every failure — it's a DOM

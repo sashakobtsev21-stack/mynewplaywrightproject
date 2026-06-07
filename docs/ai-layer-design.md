@@ -12,10 +12,12 @@ src/ai/
   prompts/*.v<N>.md     the prompts themselves
   structured.ts         fence-stripping, JSON recovery, zod parsing
   schemas.ts            strict + loose zod schemas for generated data
+  redaction.ts          secret/PII redaction + prompt-injection guards
   observability.ts      JSONL trace writer + cost model
   budget.ts             reads traces back, totals spend
   test-generator.ts     requirement -> .spec.ts draft
-  failure-analyzer.ts   failure artifacts -> root-cause hypothesis
+  failure-analyzer.ts   failure artifacts -> root-cause hypothesis (single shot)
+  agentic-analyzer.ts   tool-use loop: the model reads/greps the repo itself
   data-generator.ts     typed, validated test records
 ```
 
@@ -42,6 +44,29 @@ artifacts, so two surfaces are handled explicitly (`src/ai/redaction.ts`):
 
 Model output stays untrusted downstream too: generated data is zod-validated and
 the analysis is a hypothesis, never an auto-applied verdict.
+
+## Agentic analysis (tool-use)
+
+`agentic-analyzer.ts` is the failure analyzer as a tool-use loop instead of a
+single shot. The model is given four tools — `list_dir`, `read_file`, `grep`,
+`view_screenshot` — and investigates the failure itself: list the results folder,
+read `error-context.md`, open the spec, grep for the selector, look at the
+screenshot, then conclude. Run it with `npm run ai:analyze -- --trace <dir> --agent`.
+
+Decisions:
+
+- **Sandboxed filesystem.** Every model-supplied path goes through
+  `resolveWithinRoot()`, which refuses anything that escapes the project root —
+  the model can read the repo but not `../../etc/passwd`. Tool inputs are
+  zod-validated; a bad path comes back as an `is_error` tool result, not a throw.
+- **Same call path.** The loop calls `callClaude()` per step, so every turn is
+  retried and traced (`module: "failure-analyzer-agent"`) like any other call —
+  multi-step runs show up as a sequence in `logs/ai-traces.jsonl`.
+- **Bounded.** A step cap (after which one final, tool-less call forces an answer),
+  read-size caps, and a grep file/match budget keep token cost and latency in check.
+- **Untrusted by default.** The system prompt fences file/screenshot contents as
+  data; reads are injection-scanned. The `send` function is injectable, so the
+  loop is unit-tested with a scripted fake client (no network).
 
 ## Prompts as code
 
