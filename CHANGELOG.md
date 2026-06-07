@@ -8,8 +8,24 @@ No public releases yet — everything is pre-1.0.
 
 ## [Unreleased]
 
+### Planned
+
+- Storage state for admin UI tests (skip the login form per session)
+- Slack/Telegram nightly failure notifications
+- Performance trending dashboard from `performance-results/*.jsonl`
+
+## [0.10.0] — 2026-06-08
+
+The AI-engineering adaptation pass — closes the specific gaps an AI-engineer role
+probes (AI security, agents/tool-use, evals-gating, multi-vendor, external tracing,
+RAG), on top of the existing AI layer.
+
 ### Added
 
+- A second trace exporter (**Langfuse**) and a semantic **embeddings retriever**,
+  both drop-ins behind the existing `TraceExporter` / `Retriever` interfaces
+  (`TRACE_EXPORT=langfuse`, `RETRIEVER=embeddings`); the default model is now
+  `claude-sonnet-4-6`. 6 unit tests.
 - Retrieval grounding (lightweight **RAG**) for the test generator. Instead of one
   fixed example, it now grounds each draft in the existing specs most relevant to
   the requirement, ranked by **BM25** over the spec corpus (`src/ai/retrieval/`) —
@@ -68,12 +84,6 @@ No public releases yet — everything is pre-1.0.
   the trace. `redactSecrets()` masks keys/JWTs/tokens/credentials/emails from the
   trace error field before it's persisted. New `src/ai/redaction.ts` + 12 unit
   tests; `PRICING` now carries a "last verified" date.
-
-### Planned
-
-- Storage state for admin UI tests (skip the login form per session)
-- Slack/Telegram nightly failure notifications
-- Performance trending dashboard from `performance-results/*.jsonl`
 
 ## [0.9.0] — 2026-05-30
 
