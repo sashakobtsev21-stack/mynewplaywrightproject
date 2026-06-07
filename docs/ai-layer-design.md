@@ -21,6 +21,7 @@ src/ai/
   data-generator.ts     typed, validated test records
   providers/            LLMProvider interface + anthropic / openai adapters
   exporters/            trace exporters: noop (default) + OTLP/HTTP
+  retrieval/            BM25 lexical retriever (RAG grounding for the generator)
 ```
 
 Everything sits behind `isAiEnabled()`. With no key the data generator returns
@@ -114,6 +115,26 @@ Honeycomb, or any otel-collector next to the rest of a system's traces.
   `gen_ai.usage.*`) plus `ai.cost_usd` and `ai.injection_suspected`.
 - **Best-effort.** Export is fire-and-forget and swallows every error — telemetry
   must never break a real call (the same contract as the JSONL writer).
+
+## Retrieval grounding (RAG)
+
+The test generator doesn't hand the model one fixed example — it retrieves the
+existing specs most relevant to the requirement and grounds the draft in those.
+`rankBm25()` (`src/ai/retrieval/`) scores the spec corpus with BM25 (the classic
+lexical ranking) and returns the top matches: "cancel a booking" surfaces
+`booking-flow.spec.ts`, "create a room via the API" surfaces `room-admin.spec.ts`.
+
+Decisions:
+
+- **Lexical, not semantic — on purpose.** BM25 is deterministic, dependency-free,
+  and unit-testable; no embeddings API, no vector DB. The value here is the
+  retrieve-then-ground pattern, not the scorer. A semantic retriever (embeddings)
+  is a drop-in replacement for `rankBm25` behind the same `{id, text}[]` → ranked
+  shape.
+- **Scoped + bounded.** The corpus is filtered to the kind of test (ui vs api),
+  each file is read with a char cap, and only the top 2 are injected — grounding
+  without blowing the token budget. If nothing scores, it falls back to a known
+  example.
 
 ## Prompts as code
 

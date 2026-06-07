@@ -4,6 +4,7 @@ import { aiLogger } from './anthropic-client';
 import { getProvider } from './providers';
 import { loadPrompt } from './prompt-loader';
 import { detectInjection, sanitizeUntrusted } from './redaction';
+import { rankBm25 } from './retrieval/bm25';
 
 export type TestKind = 'ui' | 'api';
 
@@ -29,23 +30,52 @@ function readSafe(p: string, maxChars = 3000): string {
   return fs.readFileSync(p, 'utf8').slice(0, maxChars);
 }
 
-function collectProjectContext(kind: TestKind): string {
+interface SpecDoc {
+  id: string;
+  text: string;
+}
+
+// Candidate corpus for retrieval, scoped to the kind of test we're drafting.
+function specCorpus(kind: TestKind): SpecDoc[] {
+  const roots =
+    kind === 'api'
+      ? ['tests/regression/api', 'tests/api/contracts', 'tests/negative/api', 'tests/smoke/api']
+      : ['tests/regression/ui', 'tests/negative/ui', 'tests/smoke', 'tests/visual'];
+  return roots
+    .flatMap((r) => listFiles(r, '.spec.ts'))
+    .map((id) => ({ id, text: readSafe(id, 3000) }));
+}
+
+function fallbackExample(kind: TestKind): SpecDoc {
+  const id =
+    kind === 'api'
+      ? 'tests/regression/api/booking-crud.spec.ts'
+      : 'tests/regression/ui/booking-flow.spec.ts';
+  return { id, text: readSafe(id, 3000) };
+}
+
+// Lightweight RAG: ground generation in the existing specs most relevant to the
+// requirement (BM25 over the spec corpus), not one fixed example. Falls back to a
+// known example when nothing scores (e.g. a brand-new area or an empty corpus).
+function retrieveExamples(kind: TestKind, requirement: string): SpecDoc[] {
+  const ranked = rankBm25(requirement, specCorpus(kind), 2);
+  return ranked.length > 0 ? ranked.map((r) => r.doc) : [fallbackExample(kind)];
+}
+
+function collectProjectContext(kind: TestKind, requirement: string): string {
   const poms = listFiles('src/pages', '.ts');
   const clients = listFiles('src/api/clients', '.ts');
-  const exampleSpec =
-    kind === 'api'
-      ? readSafe('tests/regression/api/booking-crud.spec.ts')
-      : readSafe('tests/regression/ui/booking-flow.spec.ts');
+  const examples = retrieveExamples(kind, requirement)
+    .map((d) => ['// ' + d.id, '```ts', d.text, '```'].join('\n'))
+    .join('\n\n');
 
   return [
     `Available Page Objects:\n${poms.map((p) => '  - ' + p).join('\n')}`,
     '',
     `Available API clients:\n${clients.map((p) => '  - ' + p).join('\n')}`,
     '',
-    `Example spec (style reference):`,
-    '```ts',
-    exampleSpec,
-    '```',
+    `Most relevant existing specs (retrieved by similarity — style + pattern reference):`,
+    examples,
   ].join('\n');
 }
 
@@ -75,7 +105,7 @@ export async function generateTest(requirement: string, kind: TestKind): Promise
         text: prompt.render({
           requirement: sanitizeUntrusted(requirement),
           kind,
-          projectContext: collectProjectContext(kind),
+          projectContext: collectProjectContext(kind, requirement),
         }),
       },
     ],

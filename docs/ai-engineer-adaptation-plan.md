@@ -77,13 +77,13 @@ application domain, or a heavy vector DB for a token RAG demo. The agent team in
 
 ## Status
 
-| Item                                     | Status      |
-| ---------------------------------------- | ----------- |
-| Agent team connected (`.claude/agents/`) | ✅ done     |
-| P0.1 LLM safety                          | ✅ done     |
-| P2.3 PRICING date                        | ✅ done     |
-| P0.2 multi-provider                      | ✅ done     |
-| P1.1 agentic helper                      | ✅ done     |
-| P1.2 evals gate                          | ✅ done     |
-| P1.3 external tracing                    | ✅ done     |
-| P2.1 RAG grounding                       | ⬜ optional |
+| Item                                     | Status  |
+| ---------------------------------------- | ------- |
+| Agent team connected (`.claude/agents/`) | ✅ done |
+| P0.1 LLM safety                          | ✅ done |
+| P2.3 PRICING date                        | ✅ done |
+| P0.2 multi-provider                      | ✅ done |
+| P1.1 agentic helper                      | ✅ done |
+| P1.2 evals gate                          | ✅ done |
+| P1.3 external tracing                    | ✅ done |
+| P2.1 RAG grounding                       | ✅ done |

@@ -10,6 +10,12 @@ No public releases yet — everything is pre-1.0.
 
 ### Added
 
+- Retrieval grounding (lightweight **RAG**) for the test generator. Instead of one
+  fixed example, it now grounds each draft in the existing specs most relevant to
+  the requirement, ranked by **BM25** over the spec corpus (`src/ai/retrieval/`) —
+  lexical, deterministic, no embeddings API or vector DB; a semantic retriever
+  drops in behind the same function. Scoped by kind, top-2, with a fallback. 6 unit
+  tests (97 total).
 - External trace export over **OpenTelemetry** (OTLP/HTTP), behind `TRACE_EXPORT`.
   With `TRACE_EXPORT=otlp`, `writeTrace()` also ships each (redacted) call as a
   CLIENT span to `OTEL_EXPORTER_OTLP_ENDPOINT` — so the AI layer appears in Jaeger /

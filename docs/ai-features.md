@@ -69,12 +69,14 @@ The generator scans the repo and includes:
 
 - list of files under `src/pages/`
 - list of files under `src/api/clients/`
-- one full example spec for the chosen `--type` (UI or API), as a style reference
-- the requirement verbatim
+- the **2 existing specs most relevant to the requirement**, retrieved by BM25 over
+  the spec corpus (scoped to `--type`), as style + pattern references — a
+  lightweight RAG step (`src/ai/retrieval/`), not one fixed example
+- the requirement verbatim (fenced as untrusted data)
 
 It does **not** include the source of every POM — that would blow the context
 window for not much win. Claude is good at inferring from the filename + the
-example spec.
+retrieved specs.
 
 ### What it does NOT do
 

@@ -29,6 +29,10 @@ If you're hiring for AI engineering, these are the parts worth a look:
 - **Structured outputs** — model replies are validated with zod, with a strict
   schema, a looser fallback, and recovery for JSON truncated at `max_tokens`.
   See [structured.ts](src/ai/structured.ts) and [schemas.ts](src/ai/schemas.ts).
+- **Retrieval grounding (RAG)** — the test generator grounds each draft in the
+  existing specs most similar to the requirement, ranked by BM25 over the spec
+  corpus (lexical retrieval, no vector DB) — swap in embeddings behind the same
+  function. See [retrieval/](src/ai/retrieval/).
 - **Reliability** — one entry point for every call with exponential backoff +
   jitter, retrying only on rate limits, 5xx, and transient connection errors.
   See [anthropic-client.ts](src/ai/anthropic-client.ts).
@@ -81,7 +85,8 @@ Three helpers make up the layer — the two text helpers run through a configura
 provider (see _Provider-agnostic_ above), the analyzer is Anthropic + multimodal:
 
 1. **Test generator** — a plain-English requirement in, a `.spec.ts` draft out,
-   grounded in the project's Page Objects and one example spec.
+   grounded in the project's Page Objects and the existing specs most similar to
+   the requirement (BM25 retrieval).
 2. **Failure analyzer** — a failed test's `error-context.md` plus the screenshot
    in (multimodal), a root-cause hypothesis and next steps out.
 3. **Data generator** — typed, schema-validated test records, with an sha1 disk
@@ -194,21 +199,21 @@ Full diagram and per-layer notes in **[docs/architecture.md](docs/architecture.m
 
 ### The test suite (the practical use case)
 
-Roughly 202 tests (a few `test.fixme`/`test.skip` — see CHANGELOG for why),
+Roughly 208 tests (a few `test.fixme`/`test.skip` — see CHANGELOG for why),
 organised by purpose so the CI matrix maps cleanly onto folders, plus a node-only
 `unit` project for the AI helpers. Counts below are deduped logical tests
 (`npx playwright test --list`), not browser-multiplied.
 
-| Folder                  | What it does                                                                                                                                    | Count |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| `tests/smoke/`          | Quick sanity on home, admin login, API health. Runs on every PR before regression.                                                              | 8     |
-| `tests/regression/ui/`  | Booking flow, contact form, admin login, navigation, admin rooms/messages/branding.                                                             | 21    |
-| `tests/regression/api/` | Auth + booking CRUD/filtering, room admin CRUD, messages, report, branding, sessions.                                                           | 33    |
-| `tests/negative/`       | Bad payloads, missing fields, auth gates, overlap/unknown-id, XSS sanity, unicode, etc.                                                         | 26    |
-| `tests/performance/`    | Navigation timings, FCP, LCP, API response time. Results dumped to JSONL.                                                                       | 4     |
-| `tests/visual/`         | Pixel snapshots of home, admin, and forms. Dynamic regions are masked.                                                                          | 7     |
-| `tests/api/contracts/`  | AJV-validated auth / room / booking / message / report / branding responses.                                                                    | 12    |
-| `tests/unit/`           | Pure unit tests for the AI layer (loader, schemas, parsing, retry, cost, redaction, agentic loop, providers, eval gate + judge, OTLP exporter). | 91    |
+| Folder                  | What it does                                                                                                                                                    | Count |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `tests/smoke/`          | Quick sanity on home, admin login, API health. Runs on every PR before regression.                                                                              | 8     |
+| `tests/regression/ui/`  | Booking flow, contact form, admin login, navigation, admin rooms/messages/branding.                                                                             | 21    |
+| `tests/regression/api/` | Auth + booking CRUD/filtering, room admin CRUD, messages, report, branding, sessions.                                                                           | 33    |
+| `tests/negative/`       | Bad payloads, missing fields, auth gates, overlap/unknown-id, XSS sanity, unicode, etc.                                                                         | 26    |
+| `tests/performance/`    | Navigation timings, FCP, LCP, API response time. Results dumped to JSONL.                                                                                       | 4     |
+| `tests/visual/`         | Pixel snapshots of home, admin, and forms. Dynamic regions are masked.                                                                                          | 7     |
+| `tests/api/contracts/`  | AJV-validated auth / room / booking / message / report / branding responses.                                                                                    | 12    |
+| `tests/unit/`           | Pure unit tests for the AI layer (loader, schemas, parsing, retry, cost, redaction, agentic loop, providers, eval gate + judge, OTLP exporter, BM25 retrieval). | 97    |
 
 ### Quick start
 
@@ -363,6 +368,10 @@ License: [MIT](LICENSE).
 - **Структурированные ответы** — вывод модели валидируется zod: строгая схема,
   более мягкий fallback и восстановление JSON, обрезанного на `max_tokens`.
   См. [structured.ts](src/ai/structured.ts) и [schemas.ts](src/ai/schemas.ts).
+- **Грунтинг через retrieval (RAG)** — генератор тестов опирается на существующие
+  спеки, наиболее похожие на требование, ранжируя их BM25 по корпусу спеков
+  (лексический retrieval, без vector-DB) — эмбеддинги ставятся за той же функцией.
+  См. [retrieval/](src/ai/retrieval/).
 - **Надёжность** — единая точка вызова с экспоненциальным backoff + jitter, retry
   только на rate limit, 5xx и сетевых сбоях. См. [anthropic-client.ts](src/ai/anthropic-client.ts).
 - **Агентный tool-use** — анализатор падений умеет работать как tool-use цикл: с
@@ -412,7 +421,7 @@ Restful-Booker Platform удобен: есть публичное демо и л
 (см. _Провайдеро-независимость_ выше), анализатор — Anthropic + мультимодальный:
 
 1. **Генератор тестов** — требование текстом на входе, draft `.spec.ts` на выходе,
-   с опорой на POMы проекта и пример спека.
+   с опорой на POMы проекта и наиболее похожие существующие спеки (BM25-retrieval).
 2. **Анализатор падений** — `error-context.md` + скриншот упавшего теста
    (мультимодально) на входе, гипотеза о причине и шаги на выходе.
 3. **Генератор данных** — типизированные, провалидированные записи, с sha1-кешем
@@ -521,20 +530,20 @@ src/ai/  ──►  prompt-loader + prompts/  ──►  callClaude (retry + tra
 
 ### Тестовый набор (практический use-case)
 
-~202 теста (несколько в `test.fixme`/`test.skip` — причины в CHANGELOG),
+~208 тестов (несколько в `test.fixme`/`test.skip` — причины в CHANGELOG),
 разложены по назначению, плюс node-only проект `unit` для AI-хелперов. Числа ниже —
 дедуплицированные логические тесты (`npx playwright test --list`), без браузерного множителя.
 
-| Папка                   | Что                                                                                                                                       | Кол-во |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `tests/smoke/`          | Базовая проверка главной, админ-логина, API health.                                                                                       | 8      |
-| `tests/regression/ui/`  | Бронирование, форма связи, админ-логин, навигация, номера/сообщения/бренд.                                                                | 21     |
-| `tests/regression/api/` | Auth + booking CRUD/фильтрация, CRUD номеров, сообщения, отчёт, бренд.                                                                    | 33     |
-| `tests/negative/`       | Невалидные payload, пропуски, auth-гейты, overlap/unknown-id, XSS, unicode.                                                               | 26     |
-| `tests/performance/`    | Тайминги навигации, FCP, LCP, время ответа API.                                                                                           | 4      |
-| `tests/visual/`         | Пиксельные снапшоты с масками на динамику.                                                                                                | 7      |
-| `tests/api/contracts/`  | AJV-валидация ответов по JSON Schema (auth/room/booking/message/report/бренд).                                                            | 12     |
-| `tests/unit/`           | Unit-тесты AI-слоя (загрузчик, схемы, парсинг, retry, стоимость, редакция, агентный цикл, провайдеры, eval-гейт + судья, OTLP-экспортер). | 91     |
+| Папка                   | Что                                                                                                                                                       | Кол-во |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `tests/smoke/`          | Базовая проверка главной, админ-логина, API health.                                                                                                       | 8      |
+| `tests/regression/ui/`  | Бронирование, форма связи, админ-логин, навигация, номера/сообщения/бренд.                                                                                | 21     |
+| `tests/regression/api/` | Auth + booking CRUD/фильтрация, CRUD номеров, сообщения, отчёт, бренд.                                                                                    | 33     |
+| `tests/negative/`       | Невалидные payload, пропуски, auth-гейты, overlap/unknown-id, XSS, unicode.                                                                               | 26     |
+| `tests/performance/`    | Тайминги навигации, FCP, LCP, время ответа API.                                                                                                           | 4      |
+| `tests/visual/`         | Пиксельные снапшоты с масками на динамику.                                                                                                                | 7      |
+| `tests/api/contracts/`  | AJV-валидация ответов по JSON Schema (auth/room/booking/message/report/бренд).                                                                            | 12     |
+| `tests/unit/`           | Unit-тесты AI-слоя (загрузчик, схемы, парсинг, retry, стоимость, редакция, агентный цикл, провайдеры, eval-гейт + судья, OTLP-экспортер, BM25-retrieval). | 97     |
 
 ### Quick start
 
