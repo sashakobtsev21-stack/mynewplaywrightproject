@@ -1,5 +1,18 @@
 import { test, expect } from '@playwright/test';
-import { tokenize, rankBm25 } from '../../src/ai/retrieval/bm25';
+import {
+  tokenize,
+  rankBm25,
+  cosineSim,
+  EmbeddingsRetriever,
+  getRetriever,
+} from '../../src/ai/retrieval';
+
+const embRes = (vectors: number[][]): Response =>
+  ({
+    ok: true,
+    status: 200,
+    json: async () => ({ data: vectors.map((embedding) => ({ embedding })) }),
+  }) as unknown as Response;
 
 const docs = [
   { id: 'rooms', text: 'admin room create rooms management listing page' },
@@ -39,5 +52,42 @@ test.describe('rankBm25', () => {
     // "admin" hits the rooms doc, "guest" hits the booking doc.
     expect(rankBm25('admin guest', docs, 1)).toHaveLength(1);
     expect(rankBm25('admin guest', docs, 5)).toHaveLength(2);
+  });
+});
+
+test.describe('cosineSim', () => {
+  test('1 for identical vectors, 0 for orthogonal or zero', () => {
+    expect(cosineSim([1, 2, 3], [1, 2, 3])).toBeCloseTo(1, 6);
+    expect(cosineSim([1, 0], [0, 1])).toBe(0);
+    expect(cosineSim([0, 0], [1, 1])).toBe(0);
+  });
+});
+
+test.describe('EmbeddingsRetriever', () => {
+  test('ranks docs by cosine similarity to the query', async () => {
+    // query -> [1,0]; doc a -> [1,0] (match); doc b -> [0.6,0.8] (weaker).
+    const fetchFake = (async () =>
+      embRes([
+        [1, 0],
+        [1, 0],
+        [0.6, 0.8],
+      ])) as unknown as typeof fetch;
+    const r = new EmbeddingsRetriever({ baseUrl: 'http://x', apiKey: 'k', model: 'm' }, fetchFake);
+    const ranked = await r.rank(
+      'q',
+      [
+        { id: 'a', text: 'a' },
+        { id: 'b', text: 'b' },
+      ],
+      2,
+    );
+    expect(ranked[0].doc.id).toBe('a');
+    expect(ranked[0].score).toBeGreaterThan(ranked[1].score);
+  });
+});
+
+test.describe('getRetriever', () => {
+  test('defaults to lexical BM25', () => {
+    expect(getRetriever().name).toBe('bm25');
   });
 });

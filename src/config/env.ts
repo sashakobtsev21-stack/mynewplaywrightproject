@@ -23,12 +23,19 @@ const schema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
   OPENAI_MODEL: z.string().default('gpt-4o-mini'),
+  // Which retriever grounds the test generator. `bm25` is lexical (no key);
+  // `embeddings` is semantic via an OpenAI-compatible /embeddings endpoint.
+  RETRIEVER: z.enum(['bm25', 'embeddings']).default('bm25'),
+  EMBEDDINGS_MODEL: z.string().default('text-embedding-3-small'),
   // Export AI traces to an external sink in addition to local JSONL.
-  // `otlp` ships each call as a span over OTLP/HTTP to OTEL_EXPORTER_OTLP_ENDPOINT.
-  TRACE_EXPORT: z.enum(['none', 'otlp']).default('none'),
+  // `otlp` ships an OTLP/HTTP span; `langfuse` posts to the Langfuse ingestion API.
+  TRACE_EXPORT: z.enum(['none', 'otlp', 'langfuse']).default('none'),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
   OTEL_EXPORTER_OTLP_HEADERS: z.string().optional(),
   OTEL_SERVICE_NAME: z.string().default('restful-booker-ai'),
+  LANGFUSE_BASE_URL: z.string().url().default('https://cloud.langfuse.com'),
+  LANGFUSE_PUBLIC_KEY: z.string().optional(),
+  LANGFUSE_SECRET_KEY: z.string().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
   CI: z.string().optional(),
 });

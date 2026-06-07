@@ -106,9 +106,10 @@ each call is also shipped as an OpenTelemetry **CLIENT span** over OTLP/HTTP to
 Honeycomb, or any otel-collector next to the rest of a system's traces.
 
 - **Pluggable.** `writeTrace()` hands the redacted trace to the configured
-  `TraceExporter` (`src/ai/exporters/`): `NoopExporter` (default) or
-  `OtlpHttpExporter`. A Langfuse exporter would be a third implementation behind the
-  same interface.
+  `TraceExporter` (`src/ai/exporters/`): `NoopExporter` (default), `OtlpHttpExporter`,
+  or `LangfuseExporter` — the last posts each call as a trace + generation to the
+  Langfuse ingestion API (`TRACE_EXPORT=langfuse`), same interface, same `fetch`-only
+  contract.
 - **fetch, no SDK.** The span payload is built by hand (`toResourceSpans`, pure and
   unit-tested) and POSTed with `fetch`, matching the rest of the layer's style.
   Attributes follow the GenAI semantic conventions (`gen_ai.request.model`,
@@ -126,11 +127,12 @@ lexical ranking) and returns the top matches: "cancel a booking" surfaces
 
 Decisions:
 
-- **Lexical, not semantic — on purpose.** BM25 is deterministic, dependency-free,
-  and unit-testable; no embeddings API, no vector DB. The value here is the
-  retrieve-then-ground pattern, not the scorer. A semantic retriever (embeddings)
-  is a drop-in replacement for `rankBm25` behind the same `{id, text}[]` → ranked
-  shape.
+- **Lexical by default, semantic when wanted.** BM25 is deterministic,
+  dependency-free, and unit-testable (no embeddings API, no vector DB) — the keyless
+  default. An `EmbeddingsRetriever` (`RETRIEVER=embeddings`) is the semantic drop-in
+  behind the same `Retriever` interface: cosine over an OpenAI-compatible
+  `/embeddings` endpoint (OpenAI or a local Ollama). The value is the
+  retrieve-then-ground pattern; the scorer is swappable.
 - **Scoped + bounded.** The corpus is filtered to the kind of test (ui vs api),
   each file is read with a char cap, and only the top 2 are injected — grounding
   without blowing the token budget. If nothing scores, it falls back to a known

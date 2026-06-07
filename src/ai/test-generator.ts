@@ -4,7 +4,7 @@ import { aiLogger } from './anthropic-client';
 import { getProvider } from './providers';
 import { loadPrompt } from './prompt-loader';
 import { detectInjection, sanitizeUntrusted } from './redaction';
-import { rankBm25 } from './retrieval/bm25';
+import { getRetriever, rankBm25 } from './retrieval';
 
 export type TestKind = 'ui' | 'api';
 
@@ -55,17 +55,28 @@ function fallbackExample(kind: TestKind): SpecDoc {
 }
 
 // Lightweight RAG: ground generation in the existing specs most relevant to the
-// requirement (BM25 over the spec corpus), not one fixed example. Falls back to a
-// known example when nothing scores (e.g. a brand-new area or an empty corpus).
-function retrieveExamples(kind: TestKind, requirement: string): SpecDoc[] {
-  const ranked = rankBm25(requirement, specCorpus(kind), 2);
-  return ranked.length > 0 ? ranked.map((r) => r.doc) : [fallbackExample(kind)];
+// requirement, via the configured retriever (BM25 by default, embeddings opt-in).
+// Falls back to BM25 then a known example if the retriever errors or nothing scores.
+async function retrieveExamples(kind: TestKind, requirement: string): Promise<SpecDoc[]> {
+  const corpus = specCorpus(kind);
+  try {
+    const ranked = await getRetriever().rank(requirement, corpus, 2);
+    if (ranked.length > 0) return ranked.map((r) => r.doc);
+  } catch (err) {
+    aiLogger.warn(
+      { err: err instanceof Error ? err.message : err },
+      'retriever failed, falling back to BM25',
+    );
+    const bm = rankBm25(requirement, corpus, 2);
+    if (bm.length > 0) return bm.map((r) => r.doc);
+  }
+  return [fallbackExample(kind)];
 }
 
-function collectProjectContext(kind: TestKind, requirement: string): string {
+async function collectProjectContext(kind: TestKind, requirement: string): Promise<string> {
   const poms = listFiles('src/pages', '.ts');
   const clients = listFiles('src/api/clients', '.ts');
-  const examples = retrieveExamples(kind, requirement)
+  const examples = (await retrieveExamples(kind, requirement))
     .map((d) => ['// ' + d.id, '```ts', d.text, '```'].join('\n'))
     .join('\n\n');
 
@@ -97,6 +108,7 @@ export async function generateTest(requirement: string, kind: TestKind): Promise
   }
 
   const prompt = loadPrompt('test-generator');
+  const projectContext = await collectProjectContext(kind, requirement);
   const resp = await provider.complete({
     maxTokens: 2048,
     messages: [
@@ -105,7 +117,7 @@ export async function generateTest(requirement: string, kind: TestKind): Promise
         text: prompt.render({
           requirement: sanitizeUntrusted(requirement),
           kind,
-          projectContext: collectProjectContext(kind, requirement),
+          projectContext,
         }),
       },
     ],

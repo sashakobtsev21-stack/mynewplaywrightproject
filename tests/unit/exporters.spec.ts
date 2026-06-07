@@ -4,7 +4,9 @@ import {
   getExporter,
   NoopExporter,
   OtlpHttpExporter,
+  LangfuseExporter,
   toResourceSpans,
+  toIngestionBatch,
 } from '../../src/ai/exporters';
 
 type FetchFn = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -124,5 +126,45 @@ test.describe('getExporter', () => {
     expect(e.name).toBe('none');
     expect(e).toBeInstanceOf(NoopExporter);
     expect(() => e.export(trace())).not.toThrow();
+  });
+});
+
+test.describe('LangfuseExporter', () => {
+  const cfg = { baseUrl: 'https://cloud.langfuse.com', publicKey: 'pk', secretKey: 'sk' };
+
+  test('toIngestionBatch maps a trace to a trace + generation event', () => {
+    const b = toIngestionBatch(trace(), '2026-06-08T00:00:00.000Z') as {
+      batch: { type: string; body: Record<string, unknown> }[];
+    };
+    expect(b.batch).toHaveLength(2);
+    expect(b.batch[0].type).toBe('trace-create');
+    expect(b.batch[0].body.id).toBe('12345678-1234-1234-1234-1234567890ab');
+    expect(b.batch[1].type).toBe('generation-create');
+    expect(b.batch[1].body.model).toBe('claude-sonnet-4-5');
+    expect((b.batch[1].body.usage as { input: number }).input).toBe(100);
+  });
+
+  test('POSTs to the ingestion endpoint with basic auth', async () => {
+    const calls: { url: string | URL | Request; init?: RequestInit }[] = [];
+    const fetchFake: FetchFn = async (url, init) => {
+      calls.push({ url, init });
+      return okRes;
+    };
+    await new LangfuseExporter(cfg, fetchFake).send(trace(), '2026-06-08T00:00:00.000Z');
+    expect(String(calls[0].url)).toBe('https://cloud.langfuse.com/api/public/ingestion');
+    expect((calls[0].init?.headers as Record<string, string>).authorization).toMatch(/^Basic /);
+  });
+
+  test('does nothing without keys', async () => {
+    let called = false;
+    const fetchFake: FetchFn = async () => {
+      called = true;
+      return okRes;
+    };
+    await new LangfuseExporter(
+      { baseUrl: 'https://x', publicKey: undefined, secretKey: undefined },
+      fetchFake,
+    ).send(trace(), 'now');
+    expect(called).toBe(false);
   });
 });
