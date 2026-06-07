@@ -77,7 +77,8 @@ REST API, and isn't so big you spend the first week on the domain.
 
 ### The AI layer — design & decisions
 
-Three helpers sit behind a single `ANTHROPIC_API_KEY` gate and share one client:
+Three helpers make up the layer — the two text helpers run through a configurable
+provider (see _Provider-agnostic_ above), the analyzer is Anthropic + multimodal:
 
 1. **Test generator** — a plain-English requirement in, a `.spec.ts` draft out,
    grounded in the project's Page Objects and one example spec.
@@ -407,7 +408,8 @@ Restful-Booker Platform удобен: есть публичное демо и л
 
 ### AI-слой — устройство и решения
 
-Три хелпера за одним переключателем `ANTHROPIC_API_KEY`, общий клиент:
+Три хелпера составляют слой — текстовые два ходят через настраиваемый провайдер
+(см. _Провайдеро-независимость_ выше), анализатор — Anthropic + мультимодальный:
 
 1. **Генератор тестов** — требование текстом на входе, draft `.spec.ts` на выходе,
    с опорой на POMы проекта и пример спека.
