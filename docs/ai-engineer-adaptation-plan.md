@@ -84,6 +84,6 @@ application domain, or a heavy vector DB for a token RAG demo. The agent team in
 | P2.3 PRICING date                        | ✅ done     |
 | P0.2 multi-provider                      | ✅ done     |
 | P1.1 agentic helper                      | ✅ done     |
-| P1.2 evals gate                          | ⬜ planned  |
+| P1.2 evals gate                          | ✅ done     |
 | P1.3 external tracing                    | ⬜ planned  |
 | P2.1 RAG grounding                       | ⬜ optional |

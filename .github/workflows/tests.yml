@@ -28,6 +28,11 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:unit
+      # Offline AI evals as a release gate: scores the committed fixtures against
+      # evals/thresholds.json and fails the build if the bar isn't cleared. No key,
+      # so it's deterministic; the LLM judge only runs in live (keyed) runs.
+      - name: AI evals (offline gate)
+        run: npm run eval:ai
 
   smoke:
     name: smoke (chromium)

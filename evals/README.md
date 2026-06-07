@@ -16,7 +16,19 @@ npm run eval:ai
   model is good today.
 
 Per-run results land in `results/<timestamp>.json` (git-ignored) for tracking
-over time. The process exits non-zero if any sample fails its gate.
+over time, alongside the gate verdict.
+
+## Release gate
+
+The run ends in a **gate**, not just a report: `evaluateGate()` (`gate.ts`) checks
+the run against `thresholds.json` and the process exits non-zero when the bar isn't
+cleared — so CI fails the build.
+
+- `minPassRate` — fraction of samples that must pass their heuristics (default 1.0).
+- `minJudgeScore` — minimum **average** LLM-judge score, live runs only (default 4).
+
+CI runs `npm run eval:ai` offline on every PR (`.github/workflows/tests.yml`):
+fixtures + faker are deterministic, so it's a stable gate with no key or spend.
 
 ## What each metric checks
 
@@ -39,9 +51,12 @@ Heuristics only: the output names a root cause, lists actionable next steps, and
 is a sensible length. These catch empty or rambling answers. They do **not**
 judge whether the diagnosis is correct.
 
-## Manual rubric (the part metrics can't do)
+## LLM-as-judge (live runs)
 
-For failure analysis, real quality needs a human read. Score 1-5:
+Heuristics can't tell whether a diagnosis is _correct_. In live mode an LLM judge
+(`judge.ts`, on the cheap haiku tier) grades each analysis against this rubric and
+returns a zod-validated
+`{ score, correct_root_cause, actionable, hallucination_risk, rationale }`:
 
 | Score | Meaning                                          |
 | ----- | ------------------------------------------------ |
@@ -51,5 +66,7 @@ For failure analysis, real quality needs a human read. Score 1-5:
 | 2     | Partly wrong or generic; little signal.          |
 | 1     | Wrong or hallucinated.                           |
 
-Spot-check a few live runs this way before trusting the analyzer on anything
-that matters.
+The judge is itself an LLM — a cheap proxy, not ground truth — so the gate uses the
+**average** score across samples (`minJudgeScore`), never an individual one, and it
+reports a `hallucination_risk` because "sounds right" still isn't "is right". It
+raises the floor; it doesn't replace a manual spot-check on anything that matters.

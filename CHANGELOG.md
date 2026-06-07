@@ -10,6 +10,15 @@ No public releases yet — everything is pre-1.0.
 
 ### Added
 
+- AI evals are now a **release gate** with an **LLM-as-judge**. `evaluateGate()`
+  (`evals/gate.ts`) checks each run against committed `evals/thresholds.json`
+  (`minPassRate`, `minJudgeScore`) and exits non-zero when the bar isn't cleared;
+  CI runs `npm run eval:ai` offline on every PR (deterministic — fixtures/faker,
+  no key). In live runs an LLM judge (`evals/judge.ts`, haiku, prompt
+  `eval-judge.v1.md`) grades each failure analysis 1-5 with a zod-validated verdict
+  (score, correct-root-cause, actionable, hallucination-risk) and gates the
+  _average_ — it's a proxy, not ground truth. 11 unit tests for the gate + judge
+  parsing.
 - Multi-provider AI layer behind a small `LLMProvider` interface
   (`src/ai/providers/`). The text helpers (data generator, test generator) are now
   vendor-agnostic, switched by `LLM_PROVIDER`: `AnthropicProvider` (default, wraps

@@ -5,7 +5,7 @@ import { isAiEnabled } from '../src/ai/anthropic-client';
 import { aiDataGenerator } from '../src/ai/data-generator';
 import { generateTest } from '../src/ai/test-generator';
 import { analyze } from '../src/ai/failure-analyzer';
-import { specCases, dataCases, analysisCases } from './datasets';
+import { specCases, dataCases, analysisCases, type AnalysisCase } from './datasets';
 import {
   analysisPasses,
   dataPasses,
@@ -15,6 +15,8 @@ import {
   specPasses,
   typechecksSpec,
 } from './metrics';
+import { judgeAnalysis } from './judge';
+import { evaluateGate, loadThresholds } from './gate';
 
 /**
  * AI eval runner. Two modes:
@@ -72,6 +74,23 @@ async function evalTestGenerator(): Promise<ModuleResult> {
   return summarize('test-generator', samples);
 }
 
+/** LLM-as-judge score, but never let a judge failure crash the eval run. */
+async function judgeSafe(c: AnalysisCase, analysis: string): Promise<number | undefined> {
+  try {
+    const v = await judgeAnalysis({
+      errorContext: c.errorContext,
+      specSource: c.specSource,
+      analysis,
+    });
+    return v.score;
+  } catch (err) {
+    process.stderr.write(
+      `  (judge skipped for ${c.id}: ${err instanceof Error ? err.message : String(err)})\n`,
+    );
+    return undefined;
+  }
+}
+
 async function evalFailureAnalyzer(): Promise<ModuleResult> {
   const samples: Sample[] = [];
   if (live) {
@@ -82,7 +101,12 @@ async function evalFailureAnalyzer(): Promise<ModuleResult> {
         specSource: c.specSource,
       });
       const score = scoreAnalysis(text);
-      samples.push({ id: c.id, score: { ...score }, pass: analysisPasses(score) });
+      const judgeScore = await judgeSafe(c, text);
+      samples.push({
+        id: c.id,
+        score: { ...score, ...(judgeScore != null ? { judgeScore } : {}) },
+        pass: analysisPasses(score),
+      });
     }
   } else {
     const text = fs.readFileSync(path.join(FIXTURES, 'sample-analysis.md'), 'utf8');
@@ -120,12 +144,30 @@ async function main(): Promise<void> {
   const total = results.reduce((n, r) => n + r.total, 0);
   process.stdout.write(`\nTotal: ${totalPassed}/${total} samples passed\n`);
 
+  const judgeScores = results
+    .flatMap((r) => r.samples)
+    .map((s) => s.score.judgeScore)
+    .filter((n): n is number => typeof n === 'number');
+
+  const thresholds = loadThresholds(path.join(__dirname, 'thresholds.json'));
+  const gate = evaluateGate(
+    { passed: totalPassed, total, judgeScores, mode: live ? 'live' : 'offline' },
+    thresholds,
+  );
+
+  process.stdout.write(
+    `\nGATE: ${gate.pass ? 'PASS' : 'FAIL'} — pass rate ${(gate.passRate * 100).toFixed(0)}%` +
+      (gate.avgJudgeScore != null ? `, avg judge ${gate.avgJudgeScore}/5` : '') +
+      '\n',
+  );
+  for (const reason of gate.reasons) process.stdout.write(`  - ${reason}\n`);
+
   fs.mkdirSync(RESULTS_DIR, { recursive: true });
   const out = path.join(RESULTS_DIR, `${new Date().toISOString().replace(/[:.]/g, '-')}.json`);
   fs.writeFileSync(
     out,
     JSON.stringify(
-      { ts: new Date().toISOString(), mode: live ? 'live' : 'offline', results },
+      { ts: new Date().toISOString(), mode: live ? 'live' : 'offline', thresholds, gate, results },
       null,
       2,
     ),
@@ -133,7 +175,7 @@ async function main(): Promise<void> {
   );
   process.stdout.write(`Results written to ${path.relative(process.cwd(), out)}\n`);
 
-  if (totalPassed < total) process.exitCode = 1;
+  if (!gate.pass) process.exitCode = 1;
 }
 
 main().catch((err) => {
