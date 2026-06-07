@@ -92,6 +92,19 @@ What makes the layer worth reading, and why:
 Full write-up: **[docs/ai-layer-design.md](docs/ai-layer-design.md)**. Usage,
 prompts, and costs: **[docs/ai-features.md](docs/ai-features.md)**.
 
+### Built with an agent team
+
+This repo is developed with a small, curated team of Claude Code subagents in
+[.claude/agents/](.claude/agents/): a prompt-engineer, a TypeScript specialist, a
+Playwright QA engineer, a code reviewer, an AI-safety specialist (prompt-injection
+& PII), a cost analyst, and security / dependency auditors. They're a
+project-specific subset of my agent library
+([my_agents](https://github.com/sashakobtsev21-stack/my_agents), built on the
+MIT-licensed [claude-flow](https://github.com/ruvnet/claude-flow)) — each one
+retargeted at this codebase, with the framework's swarm/MCP coupling stripped out.
+Running a multi-agent workflow, and engineering the agent definitions themselves,
+is part of the AI-engineering story here.
+
 ### Quick demo
 
 No key needed for the first two — they run on fixtures / faker:
@@ -390,6 +403,19 @@ Restful-Booker Platform удобен: есть публичное демо и л
 
 Подробно: **[docs/ai-layer-design.md](docs/ai-layer-design.md)**. Использование,
 промпты, стоимость: **[docs/ai-features.md](docs/ai-features.md)**.
+
+### Собрано командой агентов
+
+Проект разрабатывается небольшой кураторской командой Claude Code субагентов в
+[.claude/agents/](.claude/agents/): prompt-engineer, специалист по TypeScript,
+Playwright QA-инженер, ревьюер кода, AI-safety специалист (prompt-injection и PII),
+cost-аналитик и аудиторы безопасности / зависимостей. Это
+проектно-специфичная выборка из моей библиотеки агентов
+([my_agents](https://github.com/sashakobtsev21-stack/my_agents) на базе
+MIT-лицензированного [claude-flow](https://github.com/ruvnet/claude-flow)) — каждый
+агент перенацелен на этот код, а swarm/MCP-привязка фреймворка убрана. Работа
+мультиагентным процессом и инженерия самих определений агентов — часть
+AI-engineering истории проекта.
 
 ### Быстрое демо
 

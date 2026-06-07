@@ -36,6 +36,9 @@ yarn-error.log*
 *.swp
 *.swo
 
+# Claude Code — machine-local permissions (the curated .claude/agents/ team stays committed)
+.claude/settings.local.json
+
 # OS
 # .DS_Store
 Thumbs.db
