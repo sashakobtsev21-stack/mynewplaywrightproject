@@ -36,6 +36,10 @@ If you're hiring for AI engineering, these are the parts worth a look:
   prompt name/version, success/error. See [observability.ts](src/ai/observability.ts).
 - **Cost awareness** — token-based cost per call, a per-developer budget, and
   `npm run ai:budget` to total spend from the trace log. See [budget.ts](src/ai/budget.ts).
+- **Safety** — untrusted inputs (a free-text requirement, a failed test's
+  error-context + screenshot) are fenced as data with an injection heuristic, and
+  secrets/PII are redacted before anything is written to a trace.
+  See [redaction.ts](src/ai/redaction.ts).
 - **Evals** — a small suite that scores each helper (does the generated spec
   type-check, is the data schema-valid and diverse, does the analysis name a root
   cause), runnable offline against fixtures. See [evals/](evals/).
@@ -351,6 +355,9 @@ License: [MIT](LICENSE).
   имя/версия промпта, success/error. См. [observability.ts](src/ai/observability.ts).
 - **Контроль стоимости** — стоимость по токенам на вызов, бюджет на разработчика,
   `npm run ai:budget` суммирует траты из лога. См. [budget.ts](src/ai/budget.ts).
+- **Безопасность** — недоверенные входы (текстовое требование, error-context +
+  скриншот упавшего теста) ограждаются как данные с эвристикой инъекций, а
+  секреты/PII редактируются до записи в трейс. См. [redaction.ts](src/ai/redaction.ts).
 - **Evals** — набор, который оценивает каждый хелпер (компилируется ли
   сгенерированный спек, валидны и разнообразны ли данные, назван ли root cause),
   запускается офлайн на fixtures. См. [evals/](evals/).

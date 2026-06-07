@@ -63,6 +63,8 @@ export interface CallMeta {
   module: string;
   promptName?: string;
   promptVersion?: number;
+  /** Set by a caller whose untrusted input tripped the injection heuristic. */
+  injectionSuspected?: boolean;
 }
 
 export interface CallOptions {
@@ -133,6 +135,7 @@ export async function callClaude(
       output_tokens: resp.usage.output_tokens,
       cost_usd: computeCost(withModel.model, resp.usage.input_tokens, resp.usage.output_tokens),
       success: true,
+      injection_suspected: opts.meta?.injectionSuspected,
     });
     return resp;
   } catch (err) {
@@ -147,6 +150,7 @@ export async function callClaude(
       latency_ms: Date.now() - start,
       success: false,
       error: err instanceof Error ? err.message : String(err),
+      injection_suspected: opts.meta?.injectionSuspected,
     });
     throw err;
   }

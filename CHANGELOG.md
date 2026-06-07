@@ -8,6 +8,28 @@ No public releases yet — everything is pre-1.0.
 
 ## [Unreleased]
 
+### Added
+
+- Curated Claude Code agent team under `.claude/agents/` (prompt-engineer,
+  typescript-specialist, playwright-qa-engineer, code-reviewer,
+  ai-safety-specialist, cost-analyst, security/dependency auditors), adapted from
+  the my_agents library with the framework's swarm/MCP coupling removed. See
+  `.claude/agents/README.md` and the roadmap in
+  `docs/ai-engineer-adaptation-plan.md`.
+
+### Security
+
+- AI-layer prompt-injection hardening. Untrusted inputs (the test-generator
+  requirement; the failure-analyzer's error-context + spec source, including text
+  inside the failure screenshot) are fenced in `<untrusted_data>` blocks — prompts
+  bumped to `v2` — and sanitized against fence breakout. A `detectInjection()`
+  heuristic flags suspicious input, logs it, and records `injection_suspected` on
+  the trace. `redactSecrets()` masks keys/JWTs/tokens/credentials/emails from the
+  trace error field before it's persisted. New `src/ai/redaction.ts` + 12 unit
+  tests; `PRICING` now carries a "last verified" date.
+
+### Planned
+
 - Storage state for admin UI tests (skip the login form per session)
 - Slack/Telegram nightly failure notifications
 - Performance trending dashboard from `performance-results/*.jsonl`

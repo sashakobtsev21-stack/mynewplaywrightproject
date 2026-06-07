@@ -3,6 +3,7 @@ import * as path from 'path';
 import type Anthropic from '@anthropic-ai/sdk';
 import { aiLogger, callClaude, extractText, isAiEnabled } from './anthropic-client';
 import { loadPrompt, type LoadedPrompt } from './prompt-loader';
+import { detectInjection, sanitizeUntrusted } from './redaction';
 
 const OUT_DIR = 'ai-analysis';
 
@@ -52,6 +53,17 @@ export async function analyze(ctx: FailureContext): Promise<string> {
     return formatLocalAnalysis(ctx);
   }
 
+  // The failure artifacts are untrusted (a page under test, or its DOM snapshot,
+  // can carry text that reads like an instruction — including text inside the
+  // screenshot). Flag it for the trace/log; the prompt fences it as data.
+  const scan = detectInjection(`${ctx.errorContextMd ?? ''}\n${ctx.specSource ?? ''}`);
+  if (scan.suspected) {
+    aiLogger.warn(
+      { dir: ctx.testDir, patterns: scan.patterns },
+      'possible prompt-injection in failure artifacts — fenced as data',
+    );
+  }
+
   const prompt = loadPrompt('failure-analyzer');
   const userContent: Anthropic.ContentBlockParam[] = [
     { type: 'text', text: buildPrompt(prompt, ctx) },
@@ -74,6 +86,7 @@ export async function analyze(ctx: FailureContext): Promise<string> {
         module: 'failure-analyzer',
         promptName: prompt.meta.name,
         promptVersion: prompt.meta.version,
+        injectionSuspected: scan.suspected,
       },
     },
   );
@@ -81,10 +94,12 @@ export async function analyze(ctx: FailureContext): Promise<string> {
 }
 
 function buildPrompt(prompt: LoadedPrompt, ctx: FailureContext): string {
+  // Sanitize strips any stray </untrusted_data> so the artifact can't close the
+  // fence early and break out of the data block in the v2 prompt.
   return prompt.render({
     testDir: ctx.testDir,
-    errorContext: ctx.errorContextMd ?? '<error-context.md not found>',
-    specSource: ctx.specSource ?? '<spec source not provided>',
+    errorContext: sanitizeUntrusted(ctx.errorContextMd ?? '<error-context.md not found>'),
+    specSource: sanitizeUntrusted(ctx.specSource ?? '<spec source not provided>'),
   });
 }
 

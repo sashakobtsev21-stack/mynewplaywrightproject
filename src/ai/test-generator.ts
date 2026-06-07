@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { aiLogger, callClaude, extractText, isAiEnabled } from './anthropic-client';
 import { loadPrompt } from './prompt-loader';
+import { detectInjection, sanitizeUntrusted } from './redaction';
 
 export type TestKind = 'ui' | 'api';
 
@@ -53,6 +54,16 @@ export async function generateTest(requirement: string, kind: TestKind): Promise
   }
   aiLogger.info({ requirement, kind }, 'generating draft spec');
 
+  // The requirement is free-text from a user/CLI — untrusted. Flag injection for
+  // the trace; the v2 prompt fences it as data and sanitize blocks fence breakout.
+  const scan = detectInjection(requirement);
+  if (scan.suspected) {
+    aiLogger.warn(
+      { patterns: scan.patterns },
+      'possible prompt-injection in requirement — fenced as data',
+    );
+  }
+
   const prompt = loadPrompt('test-generator');
   const resp = await callClaude(
     {
@@ -61,7 +72,7 @@ export async function generateTest(requirement: string, kind: TestKind): Promise
         {
           role: 'user',
           content: prompt.render({
-            requirement,
+            requirement: sanitizeUntrusted(requirement),
             kind,
             projectContext: collectProjectContext(kind),
           }),
@@ -73,6 +84,7 @@ export async function generateTest(requirement: string, kind: TestKind): Promise
         module: 'test-generator',
         promptName: prompt.meta.name,
         promptVersion: prompt.meta.version,
+        injectionSuspected: scan.suspected,
       },
     },
   );

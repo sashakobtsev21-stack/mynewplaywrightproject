@@ -22,6 +22,27 @@ src/ai/
 Everything sits behind `isAiEnabled()`. With no key the data generator returns
 faker, and the two CLIs print a clean "AI disabled" message instead of throwing.
 
+## Safety — untrusted input & secrets
+
+The helpers take untrusted-ish input and send it to a model, then persist
+artifacts, so two surfaces are handled explicitly (`src/ai/redaction.ts`):
+
+- **Prompt injection.** The test-generator's requirement and the failure-analyzer's
+  error-context + spec source (and any text inside the failure screenshot) are
+  untrusted. The `v2` prompts wrap them in `<untrusted_data>` blocks declared as
+  data-only; `sanitizeUntrusted()` strips any stray delimiter so a payload can't
+  close the fence and break out. `detectInjection()` is a heuristic that flags
+  common phrasings ("ignore previous instructions", a fake `system:` turn) — it
+  logs a warning and records `injection_suspected` on the trace rather than
+  hard-blocking, because the fence is the real control and a brittle blocklist
+  would only create false confidence.
+- **Secrets / PII.** `redactSecrets()` masks API keys, JWTs, bearer tokens, URL
+  credentials, and emails in the trace's free-text error field before it's
+  written — "git-ignored" is not "safe to leak".
+
+Model output stays untrusted downstream too: generated data is zod-validated and
+the analysis is a hypothesis, never an auto-applied verdict.
+
 ## Prompts as code
 
 Prompts are `<name>.v<N>.md` files with frontmatter:

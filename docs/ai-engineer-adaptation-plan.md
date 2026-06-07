@@ -80,8 +80,8 @@ application domain, or a heavy vector DB for a token RAG demo. The agent team in
 | Item                                     | Status      |
 | ---------------------------------------- | ----------- |
 | Agent team connected (`.claude/agents/`) | ✅ done     |
-| P0.1 LLM safety                          | 🚧 Sprint 1 |
-| P2.3 PRICING date                        | 🚧 Sprint 1 |
+| P0.1 LLM safety                          | ✅ done     |
+| P2.3 PRICING date                        | ✅ done     |
 | P0.2 multi-provider                      | ⬜ planned  |
 | P1.1 agentic helper                      | ⬜ planned  |
 | P1.2 evals gate                          | ⬜ planned  |

@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { redactSecrets } from './redaction';
 
 /**
  * Lightweight tracing for AI calls. Every call through callClaude() appends one
@@ -26,6 +27,8 @@ export interface AiTrace {
   cost_usd?: number;
   success: boolean;
   error?: string;
+  /** Set when an untrusted input tripped the prompt-injection heuristic. */
+  injection_suspected?: boolean;
 }
 
 interface Price {
@@ -35,7 +38,7 @@ interface Price {
   outPerM: number;
 }
 
-// Published per-million-token prices at the time of writing. Update when the
+// Published per-million-token prices. Last verified: 2026-06. Update when the
 // model list moves. Dated model ids (e.g. -20251001 suffixes) match by prefix.
 const PRICING: Record<string, Price> = {
   'claude-opus-4': { inPerM: 15, outPerM: 75 },
@@ -58,7 +61,10 @@ export function computeCost(model: string, inputTokens: number, outputTokens: nu
 export function writeTrace(trace: AiTrace): void {
   try {
     fs.mkdirSync(TRACES_DIR, { recursive: true });
-    fs.appendFileSync(TRACES_FILE, JSON.stringify(trace) + '\n', 'utf8');
+    // The error message is the one free-text field that can carry a leaked
+    // secret or PII (a stack trace, a logged token); redact before it lands.
+    const safe: AiTrace = trace.error ? { ...trace, error: redactSecrets(trace.error) } : trace;
+    fs.appendFileSync(TRACES_FILE, JSON.stringify(safe) + '\n', 'utf8');
   } catch {
     // Intentionally swallowed: tracing is best-effort.
   }
