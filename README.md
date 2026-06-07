@@ -34,8 +34,8 @@ If you're hiring for AI engineering, these are the parts worth a look — or ski
   See [structured.ts](src/ai/structured.ts) and [schemas.ts](src/ai/schemas.ts).
 - **Retrieval grounding (RAG)** — the test generator grounds each draft in the
   existing specs most similar to the requirement, ranked by BM25 over the spec
-  corpus (lexical retrieval, no vector DB) — swap in embeddings behind the same
-  function. See [retrieval/](src/ai/retrieval/).
+  corpus (lexical retrieval, no vector DB) — or semantic embeddings
+  (`RETRIEVER=embeddings`) behind the same interface. See [retrieval/](src/ai/retrieval/).
 - **Reliability** — one entry point for every call with exponential backoff +
   jitter, retrying only on rate limits, 5xx, and transient connection errors.
   See [anthropic-client.ts](src/ai/anthropic-client.ts).
@@ -370,7 +370,7 @@ License: [MIT](LICENSE).
 ### Что показывает этот проект
 
 Если вы смотрите на позицию AI engineer — вот на что стоит взглянуть (или загляните в
-**[одностраничный отчёт](https://htmlpreview.github.io/?https://github.com/sashakobtsev21-stack/mynewplaywrightproject/blob/main/docs/report.html)**):
+**[одностраничный отчёт «для чайников»](https://htmlpreview.github.io/?https://github.com/sashakobtsev21-stack/mynewplaywrightproject/blob/main/docs/report-ru.html)**):
 
 - **Промпты как код** — каждый промпт это версионированный markdown-файл с
   объявленным контрактом вход/выход, через единый загрузчик.
@@ -380,7 +380,7 @@ License: [MIT](LICENSE).
   См. [structured.ts](src/ai/structured.ts) и [schemas.ts](src/ai/schemas.ts).
 - **Грунтинг через retrieval (RAG)** — генератор тестов опирается на существующие
   спеки, наиболее похожие на требование, ранжируя их BM25 по корпусу спеков
-  (лексический retrieval, без vector-DB) — эмбеддинги ставятся за той же функцией.
+  (лексический retrieval, без vector-DB) — или семантические эмбеддинги (`RETRIEVER=embeddings`) за тем же интерфейсом.
   См. [retrieval/](src/ai/retrieval/).
 - **Надёжность** — единая точка вызова с экспоненциальным backoff + jitter, retry
   только на rate limit, 5xx и сетевых сбоях. См. [anthropic-client.ts](src/ai/anthropic-client.ts).

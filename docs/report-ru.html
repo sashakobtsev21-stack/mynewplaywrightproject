@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-ассистированная автоматизация тестов — отчёт (по-русски, для чайников)</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --panel-2: #1c232c;
+        --border: #2d333b;
+        --text: #e6edf3;
+        --muted: #9aa7b2;
+        --accent: #d97757;
+        --accent-2: #3fb6a8;
+        --ok: #3fb950;
+        --warn: #d29922;
+        --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: radial-gradient(1200px 600px at 80% -10%, #1a2230 0%, var(--bg) 55%);
+        color: var(--text);
+        font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      a { color: var(--accent-2); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      code { font-family: var(--mono); font-size: 0.86em; background: #11161d; border: 1px solid var(--border); border-radius: 5px; padding: 0.1em 0.4em; color: #cdd6e0; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px 80px; }
+
+      header.hero { padding: 56px 0 28px; border-bottom: 1px solid var(--border); }
+      .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      .eyebrow { color: var(--accent); font-family: var(--mono); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .lang { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+      h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.12; margin: 12px 0 12px; }
+      h1 .sub { color: var(--muted); font-weight: 400; }
+      .lede { color: var(--muted); max-width: 780px; font-size: 18px; }
+      .meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+      .pill { font-family: var(--mono); font-size: 12px; color: var(--muted); background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 5px 11px; }
+      .pill b { color: var(--text); }
+
+      h2 { font-size: 24px; margin: 52px 0 6px; }
+      h2 .n { color: var(--accent); font-family: var(--mono); font-size: 15px; margin-right: 8px; }
+      .section-note { color: var(--muted); margin: 0 0 22px; }
+      .callout { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 16px 18px; color: var(--text); font-size: 17px; }
+
+      .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+      .grid.two { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+      .card { background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border: 1px solid var(--border); border-radius: 12px; padding: 16px 16px 14px; }
+      .card h3 { margin: 0 0 6px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+      .card h3 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+      .card p { margin: 0 0 8px; color: var(--muted); font-size: 14.5px; }
+      .card .files { font-family: var(--mono); font-size: 12px; color: #7d8893; }
+      .term { color: var(--accent-2); font-weight: 600; }
+
+      .timeline { border-left: 2px solid var(--border); margin-left: 8px; padding-left: 22px; }
+      .step { position: relative; padding: 6px 0 22px; }
+      .step::before { content: ""; position: absolute; left: -29px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--bg); }
+      .step h3 { margin: 0 0 4px; font-size: 16px; }
+      .step .sha { font-family: var(--mono); font-size: 12px; color: var(--accent-2); }
+      .step p { margin: 4px 0 0; color: var(--muted); font-size: 14.5px; }
+
+      .flow { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+      pre { margin: 0; font-family: var(--mono); font-size: 13px; color: #c2ccd6; white-space: pre; }
+
+      table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+      th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+      th { color: var(--muted); font-weight: 600; font-size: 13px; }
+      td .ok { color: var(--ok); }
+      .statgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 20px; }
+      .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+      .stat .num { font-size: 30px; font-weight: 700; }
+      .stat .lab { color: var(--muted); font-size: 13px; }
+      .stat .num.green { color: var(--ok); }
+
+      ul.lean { margin: 6px 0 0; padding-left: 20px; color: var(--muted); }
+      ul.lean li { margin: 6px 0; }
+      footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <div class="topbar">
+          <div class="eyebrow">Инженерный отчёт · AI-слой</div>
+          <div class="lang"><a href="report.html">English version →</a></div>
+        </div>
+        <h1>Restful-Booker Platform<br /><span class="sub">AI-ассистированная автоматизация тестов</span></h1>
+        <p class="lede">
+          Это набор автотестов на Playwright + TypeScript, поверх которого построен «умный»
+          слой на базе модели Claude (Anthropic). Главное здесь — не сами тесты, а то,
+          <b>как по-взрослому сделан AI-слой</b>: с проверками, защитой, метриками и оценкой
+          качества, а не «просто дёрнуть API». Этот документ объясняет всё простым языком —
+          для тех, кто не в теме.
+        </p>
+        <div class="meta">
+          <span class="pill">репозиторий · <b>mynewplaywrightproject</b></span>
+          <span class="pill">релиз · <b>v0.10.0</b></span>
+          <span class="pill">тестов · <b>~214</b> (unit <b>103</b>)</span>
+          <span class="pill">типы/линт · <b class="ok">чисто</b></span>
+          <span class="pill">eval-гейт · <b>PASS</b></span>
+          <span class="pill">роль · <b>AI Engineer</b></span>
+        </div>
+      </header>
+
+      <h2><span class="n">00</span>Если совсем коротко</h2>
+      <div class="callout">
+        Есть приложение (сайт бронирования) — его надо тестировать. Тесты написаны на
+        Playwright. А ещё к проекту прикручён слой искусственного интеллекта: он помогает
+        писать тесты, разбирать падения и придумывать тестовые данные. Этот слой сделан так,
+        чтобы ему можно было доверять под реальной нагрузкой — отсюда защита, проверки,
+        учёт денег и автоматическая оценка качества. Именно эта инженерия и есть портфолио
+        под вакансию <b>AI Engineer</b>.
+      </div>
+
+      <h2><span class="n">01</span>Словарь для чайников</h2>
+      <p class="section-note">Короткие объяснения терминов, которые встретятся ниже.</p>
+      <div class="grid">
+        <div class="card"><h3><span class="dot"></span>LLM (языковая модель)</h3><p>ИИ, который понимает и пишет текст — например Claude или GPT. Ему дают задание текстом, он отвечает текстом.</p></div>
+        <div class="card"><h3><span class="dot"></span>Промпт</h3><p>Инструкция модели текстом. В проекте промпты лежат отдельными версионированными файлами — как код, который можно ревьюить и менять.</p></div>
+        <div class="card"><h3><span class="dot"></span>Токены и стоимость</h3><p>Модель считает текст в «токенах», и за них платят деньги. Проект считает стоимость <i>каждого</i> вызова и держит бюджет.</p></div>
+        <div class="card"><h3><span class="dot"></span>Prompt-injection</h3><p>Атака: во входных данных прячут команду вроде «забудь инструкции и сделай другое». Защита — чётко отделять «данные» от «инструкций».</p></div>
+        <div class="card"><h3><span class="dot"></span>PII и секреты</h3><p>Личные данные (почта, телефон) и ключи доступа. Их нужно вычищать из логов, чтобы они никуда не утекли.</p></div>
+        <div class="card"><h3><span class="dot"></span>Структурированный вывод</h3><p>Заставляем модель вернуть строгий JSON и проверяем его схемой (zod). Невалидное до теста не доходит.</p></div>
+        <div class="card"><h3><span class="dot"></span>Агент / tool-use</h3><p>Модель не отвечает за один проход, а в цикле сама пользуется инструментами: открыть файл, поискать по коду, посмотреть скриншот.</p></div>
+        <div class="card"><h3><span class="dot"></span>RAG (retrieval)</h3><p>Перед генерацией находим в проекте самые похожие примеры и подкладываем их модели — чтобы «заземлить» её и получить релевантный ответ.</p></div>
+        <div class="card"><h3><span class="dot"></span>Эмбеддинги</h3><p>Перевод смысла текста в набор чисел. Позволяет искать «по смыслу», а не по точным словам.</p></div>
+        <div class="card"><h3><span class="dot"></span>Провайдер</h3><p>Поставщик модели (Anthropic, OpenAI, локальный Ollama…). Проект умеет переключаться между ними одной настройкой.</p></div>
+        <div class="card"><h3><span class="dot"></span>Трейс / наблюдаемость</h3><p>Запись о каждом вызове: сколько длился, сколько токенов и денег. Можно отправлять во внешние системы (Jaeger, Langfuse).</p></div>
+        <div class="card"><h3><span class="dot"></span>Eval + гейт</h3><p>Автотесты <i>качества</i> ИИ. «Гейт» — это порог: если качество просело, сборка (CI) падает и плохой код не проходит.</p></div>
+      </div>
+
+      <h2><span class="n">02</span>Что умеет AI-слой (простыми словами)</h2>
+      <p class="section-note">Двенадцать возможностей. В скобках — где это лежит в коде, в папке <code>src/ai/</code>.</p>
+      <div class="grid two">
+        <div class="card"><h3><span class="dot"></span>Промпты как код</h3><p>Каждый промпт — отдельный файл с версией и контрактом «что на вход / что на выход». Менять и проверять их можно как обычный код.</p><div class="files">prompts/ · prompt-loader.ts</div></div>
+        <div class="card"><h3><span class="dot"></span>Проверка ответа модели</h3><p>Ответ модели разбирается и проверяется строгой схемой; есть мягкий запасной вариант и починка «обрезанного» JSON. В тест не попадёт ничего непроверенного.</p><div class="files">structured.ts · schemas.ts</div></div>
+        <div class="card"><h3><span class="dot"></span>RAG-заземление</h3><p>Генератор тестов подбирает самые похожие существующие тесты (по умолчанию алгоритмом <b>BM25</b>; опционально — «по смыслу» через эмбеддинги) и показывает их модели как образец.</p><div class="files">retrieval/</div></div>
+        <div class="card"><h3><span class="dot"></span>Агент с инструментами</h3><p>Анализатор падений умеет сам исследовать проект: открыть папку, прочитать файл, поискать по коду, посмотреть скриншот. Все пути ограничены корнем репозитория (песочница).</p><div class="files">agentic-analyzer.ts</div></div>
+        <div class="card"><h3><span class="dot"></span>Не привязан к вендору</h3><p>Текстовые помощники ходят через единый интерфейс: Anthropic <i>или</i> любой OpenAI-совместимый сервис (OpenAI, локальный Ollama) — переключается настройкой <code>LLM_PROVIDER</code>.</p><div class="files">providers/</div></div>
+        <div class="card"><h3><span class="dot"></span>Надёжность</h3><p>Один общий путь для всех вызовов: при сбое — повтор с нарастающей паузой, но только на «временных» ошибках (лимиты, 5xx, обрыв сети).</p><div class="files">anthropic-client.ts</div></div>
+        <div class="card"><h3><span class="dot"></span>Наблюдаемость</h3><p>Каждый вызов пишет строку-трейс (время, токены, стоимость, провайдер) и может уходить как <b>OpenTelemetry</b>-спан или в <b>Langfuse</b> — в любую систему мониторинга.</p><div class="files">observability.ts · exporters/</div></div>
+        <div class="card"><h3><span class="dot"></span>Учёт денег</h3><p>Стоимость считается на каждый вызов; есть личный бюджет и команда <code>npm run ai:budget</code>, которая суммирует траты (локальные модели — $0).</p><div class="files">budget.ts</div></div>
+        <div class="card"><h3><span class="dot"></span>Безопасность</h3><p>Недоверенный ввод (требование, контекст падения, скриншот) огораживается как «данные», работает эвристика на prompt-injection, а секреты/PII вычищаются до записи в трейс.</p><div class="files">redaction.ts</div></div>
+        <div class="card"><h3><span class="dot"></span>Оценка качества + гейт</h3><p>Набор проверяет каждого помощника, а <b>LLM-судья</b> (дешёвая модель) ставит анализу оценку 1–5. Если средний балл/проходимость ниже порога — CI падает. В CI идёт офлайн на каждый PR.</p><div class="files">evals/ · gate.ts · judge.ts</div></div>
+        <div class="card"><h3><span class="dot"></span>Команда агентов</h3><p>Проект разрабатывается восемью кураторскими Claude Code субагентами (prompt-engineer, AI-safety, ревьюер кода и др.) — выборка из большой библиотеки агентов.</p><div class="files">.claude/agents/</div></div>
+        <div class="card"><h3><span class="dot"></span>Честная позиция про AI в QA</h3><p>Сгенерированный тест даёт ложную уверенность; анализ падения — гипотеза, а не вердикт. Проверки, трейсы и evals существуют, чтобы доверять выводу ровно настолько, насколько он это заслужил.</p><div class="files">README · evals/README.md</div></div>
+      </div>
+
+      <h2><span class="n">03</span>Как работает один вызов</h2>
+      <p class="section-note">Все помощники идут одним путём — надёжность, деньги, безопасность и метрики живут в одном месте.</p>
+      <div class="flow">
+        <pre>требование ──▶ RAG: найти похожие спеки ──▶ собрать промпт из файла
+                                                  (недоверенный ввод огорожен)
+                                                        │
+                                                        ▼
+                                          провайдер модели (.complete)
+                                   Anthropic  ◀──┴──▶  OpenAI-совместимый
+                                                        │
+                          callClaude(): пауза+джиттер, повтор только на временных ошибках
+                                                        │
+                        ┌───────────────────────────────┼───────────────┐
+                        ▼                                ▼               ▼
+                проверка ответа (zod)        запись трейса (без секретов)  экспорт трейса
+                строгая → мягкая → починка   logs/ai-traces.jsonl          OTLP / Langfuse
+                        │                                │
+                        ▼                                ▼
+                 черновик / данные            npm run ai:budget · Jaeger / Langfuse
+
+  анализатор-агент: цикл { модель → вызов инструмента → результат (в песочнице) }
+  evals: оценить помощников → судья-LLM (1–5) → сверка с порогом → CI падает, если ниже</pre>
+      </div>
+
+      <h2><span class="n">04</span>Что сделано</h2>
+      <p class="section-note">Стартовали с уже рабочего AI-слоя и закрыли конкретные пробелы под вакансию. Каждый этап — в <code>main</code>, с тестами и зелёным гейтом. В скобках — хэши коммитов.</p>
+      <div class="timeline">
+        <div class="step"><h3>Команда агентов + план адаптации <span class="sha">47f2a98 · ff1f035</span></h3><p>Восемь проектных Claude Code субагентов в <code>.claude/agents/</code> и приоритизированный план в <code>docs/ai-engineer-adaptation-plan.md</code>.</p></div>
+        <div class="step"><h3>Безопасность LLM <span class="sha">e1ccf9d</span></h3><p>Защита от prompt-injection (промпты подняты до v2), эвристика-детектор и вычистка секретов/PII до записи в трейс. <code>redaction.ts</code> + 12 тестов.</p></div>
+        <div class="step"><h3>Агент с инструментами ⭐ <span class="sha">49b00a7</span></h3><p>Анализатор падений как цикл с инструментами и песочницей путей. Флаг <code>--agent</code>; 10 тестов на «фейковом» клиенте без сети.</p></div>
+        <div class="step"><h3>Мультипровайдер <span class="sha">f8f52d9</span></h3><p><code>LLMProvider</code>: адаптер Anthropic и fetch-провайдер для OpenAI-совместимых сервисов. Единые трейсы и стоимость по вендорам. 6 тестов.</p></div>
+        <div class="step"><h3>Eval-гейт + LLM-судья <span class="sha">670c16f</span></h3><p>Чистая функция-гейт по порогам, судья на дешёвой модели и запуск <code>eval:ai</code> в CI (офлайн) на каждый PR. 11 тестов.</p></div>
+        <div class="step"><h3>Внешний трейсинг (OpenTelemetry) <span class="sha">4d212b6</span></h3><p>Подключаемый экспортер: OTLP/HTTP-спан с атрибутами GenAI и стоимостью; «выстрелил и забыл», ошибки не ломают вызов. 6 тестов.</p></div>
+        <div class="step"><h3>RAG через BM25 <span class="sha">17adfc5</span></h3><p>Вместо одного статичного примера — поиск самых релевантных существующих спеков. 6 тестов.</p></div>
+        <div class="step"><h3>Релиз v0.10.0 — Langfuse + эмбеддинги + модель 4.6 <span class="sha">715e694 · 5a0d052</span></h3><p>Второй экспортер трейсов (<b>Langfuse</b>) и семантический <b>embeddings</b>-ретривер — оба «drop-in» за уже готовыми интерфейсами; дефолт-модель обновлена до <code>claude-sonnet-4-6</code>; два реальных скриншота в README. 6 тестов.</p></div>
+      </div>
+
+      <h2><span class="n">05</span>Что осталось</h2>
+      <p class="section-note">План закрыт полностью. Ниже — необязательные идеи на будущее (ничего не блокирует; всё встаёт за существующие интерфейсы).</p>
+      <ul class="lean">
+        <li>CI-хук, который гоняет evals <i>только</i> на PR, затрагивающих <code>src/ai/</code> (сейчас они и так идут на каждый PR — это шире).</li>
+        <li><code>storageState</code> для админских UI-сессий (не логиниться заново в каждом тесте).</li>
+        <li>Мини-дашборд из <code>performance-results/*.jsonl</code> (графики по производительности).</li>
+        <li>Настоящий разбор <code>trace.zip</code> в анализаторе падений (сейчас читается уже распакованная папка).</li>
+        <li>Переезд ESLint на v9 flat config.</li>
+        <li>Сравнение «провайдер против провайдера» и «BM25 против эмбеддингов» по цене/качеству на evals.</li>
+      </ul>
+
+      <h2><span class="n">06</span>Качество и статус</h2>
+      <div class="statgrid">
+        <div class="stat"><div class="num">~214</div><div class="lab">тестов всего</div></div>
+        <div class="stat"><div class="num">103</div><div class="lab">unit-тестов AI-слоя</div></div>
+        <div class="stat"><div class="num green">PASS</div><div class="lab">офлайн eval-гейт (CI)</div></div>
+        <div class="stat"><div class="num green">0</div><div class="lab">ошибок линта · типы чисто</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Слой</th><th>Что покрыто тестами</th><th>Статус</th></tr></thead>
+        <tbody>
+          <tr><td>Загрузчик промптов</td><td>контракт frontmatter, подстановка за один проход</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Разбор ответа</td><td>строгая/мягкая схема, починка обрезанного JSON</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Повторы / паузы</td><td>какие ошибки временные, цикл с джиттером</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Стоимость / бюджет</td><td>цены по моделям, суммы по периодам</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Безопасность</td><td>вычистка секретов, детект инъекций, защита фенса</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Провайдеры</td><td>выбор провайдера, маппинг OpenAI + повтор, маппинг Anthropic</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Агентный цикл</td><td>песочница путей, выполнение инструментов, лимит шагов</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Eval-гейт / судья</td><td>логика порога, разбор вердикта судьи</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Экспорт трейсов</td><td>маппинг OTLP и Langfuse, контракт «не падать»</td><td><span class="ok">✓</span></td></tr>
+          <tr><td>Поиск (retrieval)</td><td>токенизация, BM25, косинус, выбор top-K</td><td><span class="ok">✓</span></td></tr>
+        </tbody>
+      </table>
+
+      <footer>
+        Русский отчёт «для чайников». Английская версия: <a href="report.html">report.html</a>.
+        Подробности: <a href="ai-layer-design.md">ai-layer-design.md</a> ·
+        <a href="ai-features.md">ai-features.md</a> ·
+        <a href="ai-engineer-adaptation-plan.md">план адаптации</a> ·
+        <a href="../README.md">README</a>. Сгенерировано с Claude Code.
+      </footer>
+    </div>
+  </body>
+</html>
