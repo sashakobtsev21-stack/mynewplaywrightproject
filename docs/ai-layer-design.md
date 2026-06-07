@@ -20,6 +20,7 @@ src/ai/
   agentic-analyzer.ts   tool-use loop: the model reads/greps the repo itself
   data-generator.ts     typed, validated test records
   providers/            LLMProvider interface + anthropic / openai adapters
+  exporters/            trace exporters: noop (default) + OTLP/HTTP
 ```
 
 Everything sits behind `isAiEnabled()`. With no key the data generator returns
@@ -95,6 +96,24 @@ Decisions:
 - **Testable transport.** Both adapters take an injectable transport (the Anthropic
   `call` fn / the `fetch` impl), so request→response mapping and retry are
   unit-tested with no network.
+
+## Trace export (OpenTelemetry)
+
+By default traces live only in `logs/ai-traces.jsonl`. Set `TRACE_EXPORT=otlp` and
+each call is also shipped as an OpenTelemetry **CLIENT span** over OTLP/HTTP to
+`OTEL_EXPORTER_OTLP_ENDPOINT` — so the AI layer shows up in Jaeger, Grafana Tempo,
+Honeycomb, or any otel-collector next to the rest of a system's traces.
+
+- **Pluggable.** `writeTrace()` hands the redacted trace to the configured
+  `TraceExporter` (`src/ai/exporters/`): `NoopExporter` (default) or
+  `OtlpHttpExporter`. A Langfuse exporter would be a third implementation behind the
+  same interface.
+- **fetch, no SDK.** The span payload is built by hand (`toResourceSpans`, pure and
+  unit-tested) and POSTed with `fetch`, matching the rest of the layer's style.
+  Attributes follow the GenAI semantic conventions (`gen_ai.request.model`,
+  `gen_ai.usage.*`) plus `ai.cost_usd` and `ai.injection_suspected`.
+- **Best-effort.** Export is fire-and-forget and swallows every error — telemetry
+  must never break a real call (the same contract as the JSONL writer).
 
 ## Prompts as code
 

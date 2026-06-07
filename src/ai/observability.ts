@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { redactSecrets } from './redaction';
+import { exportTrace } from './exporters';
 
 /**
  * Lightweight tracing for AI calls. Every call through callClaude() appends one
@@ -76,6 +77,8 @@ export function writeTrace(trace: AiTrace): void {
     // secret or PII (a stack trace, a logged token); redact before it lands.
     const safe: AiTrace = trace.error ? { ...trace, error: redactSecrets(trace.error) } : trace;
     fs.appendFileSync(TRACES_FILE, JSON.stringify(safe) + '\n', 'utf8');
+    // Ship the (redacted) trace to an external sink if one is configured.
+    exportTrace(safe);
   } catch {
     // Intentionally swallowed: tracing is best-effort.
   }

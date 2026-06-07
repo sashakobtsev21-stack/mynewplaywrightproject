@@ -10,6 +10,14 @@ No public releases yet — everything is pre-1.0.
 
 ### Added
 
+- External trace export over **OpenTelemetry** (OTLP/HTTP), behind `TRACE_EXPORT`.
+  With `TRACE_EXPORT=otlp`, `writeTrace()` also ships each (redacted) call as a
+  CLIENT span to `OTEL_EXPORTER_OTLP_ENDPOINT` — so the AI layer appears in Jaeger /
+  Tempo / Honeycomb / any otel-collector. Pluggable `TraceExporter` interface
+  (`src/ai/exporters/`): `NoopExporter` (default) and a `fetch`-based
+  `OtlpHttpExporter` (no SDK); the span payload (`toResourceSpans`) uses the GenAI
+  semantic conventions plus `ai.cost_usd` / `ai.injection_suspected`. Fire-and-forget
+  and non-throwing — telemetry never breaks a call. 6 unit tests (mapping + transport).
 - AI evals are now a **release gate** with an **LLM-as-judge**. `evaluateGate()`
   (`evals/gate.ts`) checks each run against committed `evals/thresholds.json`
   (`minPassRate`, `minJudgeScore`) and exits non-zero when the bar isn't cleared;

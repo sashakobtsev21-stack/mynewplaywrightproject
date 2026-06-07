@@ -23,6 +23,12 @@ const schema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
   OPENAI_MODEL: z.string().default('gpt-4o-mini'),
+  // Export AI traces to an external sink in addition to local JSONL.
+  // `otlp` ships each call as a span over OTLP/HTTP to OTEL_EXPORTER_OTLP_ENDPOINT.
+  TRACE_EXPORT: z.enum(['none', 'otlp']).default('none'),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
+  OTEL_EXPORTER_OTLP_HEADERS: z.string().optional(),
+  OTEL_SERVICE_NAME: z.string().default('restful-booker-ai'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
   CI: z.string().optional(),
 });
