@@ -17,6 +17,9 @@ const schema = z.object({
   ADMIN_USERNAME: z.string().min(1).default('admin'),
   ADMIN_PASSWORD: z.string().min(1).default('password'),
   ANTHROPIC_API_KEY: z.string().optional(),
+  // Anthropic model id for the text helpers. Override to A/B haiku/opus.
+  // Validated here so a typo fails loudly instead of silently mis-billing.
+  AI_MODEL: z.string().default('claude-sonnet-4-6'),
   // Which LLM vendor the text helpers use. `openai` covers any OpenAI-compatible
   // endpoint (OpenAI, a local Ollama / LM Studio server, OpenRouter, ...).
   LLM_PROVIDER: z.enum(['anthropic', 'openai']).default('anthropic'),

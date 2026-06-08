@@ -19,7 +19,7 @@ test.describe('visual: home page', () => {
     });
   });
 
-test('full page', async ({ homePage, page }) => {
+  test('full page', async ({ homePage, page }) => {
     await homePage.open();
     // eslint-disable-next-line playwright/no-networkidle -- visual snapshot needs the page fully settled
     await page.waitForLoadState('networkidle');
@@ -30,10 +30,7 @@ test('full page', async ({ homePage, page }) => {
     await expect(page).toHaveScreenshot('home-full.png', {
       fullPage: true,
       maxDiffPixelRatio: 0.03,
-      mask: [
-        page.locator('img'),
-        page.locator('.room-price, [data-testid="price"]'),
-      ],
+      mask: [page.locator('img'), page.locator('.room-price, [data-testid="price"]')],
     });
   });
 

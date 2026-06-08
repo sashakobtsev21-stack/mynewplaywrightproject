@@ -1,6 +1,9 @@
 import { test, expect } from '../../../src/fixtures/playwright-fixtures';
 import { bookingFactory } from '../../../src/fixtures/data-factory';
 import type { Booking } from '../../../src/api/types/booking.types';
+import { API } from '../../../src/config/constants';
+import { cookieHeader } from '../../../src/utils/api-helpers';
+import { env } from '../../../src/config/env';
 
 /**
  * Serial mode is intentional — these tests reuse the same booking id across
@@ -10,10 +13,30 @@ import type { Booking } from '../../../src/api/types/booking.types';
  */
 test.describe.serial('booking CRUD', () => {
   let created: Booking;
+  // Every id created across attempts (module state survives serial retries in
+  // the same worker), so afterAll can clean up orphans left by a retried run.
+  const createdIds: number[] = [];
+
+  // Best-effort cleanup so a flaky/retried run never leaves orphan bookings on
+  // the shared demo. Wrapped so teardown can never fail the suite. (Declared at
+  // the top per eslint prefer-hooks-on-top; afterAll still runs last.)
+  test.afterAll(async ({ playwright, adminToken }) => {
+    if (createdIds.length === 0) return;
+    const ctx = await playwright.request.newContext({ baseURL: env.BASE_URL });
+    for (const id of createdIds) {
+      try {
+        await ctx.delete(`${API.booking}/${id}`, { headers: cookieHeader(adminToken) });
+      } catch {
+        // ignore — the entity may already be gone or the demo may be down
+      }
+    }
+    await ctx.dispose();
+  });
 
   test('POST creates a booking and returns the persisted entity', async ({ bookingClient }) => {
     const payload = bookingFactory();
     created = await bookingClient.create(payload);
+    createdIds.push(created.bookingid);
 
     expect(created.bookingid).toBeGreaterThan(0);
     expect(created.firstname).toBe(payload.firstname);
@@ -32,7 +55,9 @@ test.describe.serial('booking CRUD', () => {
   test('PUT fully updates the booking', async ({ bookingClient, adminToken }) => {
     // Reuse the factory's far-future random window so PUT doesn't collide with
     // existing bookings (a hard-coded `bookingWindow(30, 5)` was 409-prone).
-    const { bookingdates: { checkin, checkout } } = bookingFactory();
+    const {
+      bookingdates: { checkin, checkout },
+    } = bookingFactory();
     const updated = await bookingClient.update(
       created.bookingid,
       {

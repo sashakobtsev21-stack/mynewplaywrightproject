@@ -2,6 +2,7 @@ import * as crypto from 'crypto';
 import { env } from '../../config/env';
 import { aiLogger } from '../anthropic-client';
 import { computeCost, writeTrace, type AiTrace } from '../observability';
+import { redactSecrets } from '../redaction';
 import type { LLMProvider, LLMRequest, LLMResponse } from './types';
 
 type FetchFn = typeof globalThis.fetch;
@@ -88,7 +89,9 @@ export class OpenAICompatibleProvider implements LLMProvider {
       });
       if (!res.ok) {
         const text = await res.text().catch(() => '');
-        throw new Error(`openai HTTP ${res.status}: ${text.slice(0, 200)}`);
+        // Redact before the message enters trace exporters (OTLP/Langfuse):
+        // a provider 401 body can echo the API key.
+        throw new Error(`openai HTTP ${res.status}: ${redactSecrets(text.slice(0, 200))}`);
       }
       const data = (await res.json()) as ChatCompletion;
       const text = data.choices?.[0]?.message?.content ?? '';

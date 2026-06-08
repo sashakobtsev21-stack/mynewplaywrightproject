@@ -2,11 +2,14 @@ import { test, expect } from '../../../src/fixtures/playwright-fixtures';
 import { faker } from '@faker-js/faker';
 
 test.describe('contact form', () => {
-  // The demo shows no confirmation locator after submit (tracked in issue #5),
-  // so these two only check that submitting doesn't throw or break the page.
-  // eslint-disable-next-line playwright/expect-expect
-  test('user can submit a valid contact message', async ({ homePage }) => {
+  // The demo shows no confirmation locator after submit (issue #5), so instead
+  // of asserting on the DOM we assert the form's POST to the message API
+  // succeeded — a real behavioral signal that doesn't depend on a flaky toast.
+  test('user can submit a valid contact message', async ({ homePage, page }) => {
     await homePage.open();
+    const messagePost = page.waitForResponse(
+      (r) => r.request().method() === 'POST' && /message/i.test(r.url()),
+    );
     await homePage.submitContactForm({
       name: faker.person.fullName(),
       email: faker.internet.email(),
@@ -14,13 +17,15 @@ test.describe('contact form', () => {
       subject: 'Question about availability',
       message: 'Hi, do you have availability for next weekend?',
     });
-    // No confirmation locator yet — see #5 in repo issues. Just check no JS error.
+    expect((await messagePost).ok()).toBeTruthy();
   });
 
-  // eslint-disable-next-line playwright/expect-expect
-  test('message field accepts long text', async ({ homePage }) => {
+  test('message field accepts long text', async ({ homePage, page }) => {
     await homePage.open();
     const longMessage = faker.lorem.paragraphs(3).slice(0, 800);
+    const messagePost = page.waitForResponse(
+      (r) => r.request().method() === 'POST' && /message/i.test(r.url()),
+    );
     await homePage.submitContactForm({
       name: faker.person.fullName(),
       email: faker.internet.email(),
@@ -28,6 +33,7 @@ test.describe('contact form', () => {
       subject: 'Long subject test',
       message: longMessage,
     });
+    expect((await messagePost).ok()).toBeTruthy();
   });
 
   test('contact section becomes visible after scrolling', async ({ homePage }) => {

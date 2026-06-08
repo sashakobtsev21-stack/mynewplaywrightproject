@@ -7,10 +7,7 @@ test.describe('booking flow', () => {
     await homePage.open();
   });
 
-  test('user can open the booking form from a room card', async ({
-    homePage,
-    bookingPage,
-  }) => {
+  test('user can open the booking form from a room card', async ({ homePage, bookingPage }) => {
     await homePage.openFirstRoomBooking();
     await expect(bookingPage.bookButton).toBeVisible();
   });
