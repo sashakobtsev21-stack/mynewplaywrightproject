@@ -135,3 +135,50 @@ jobs:
             playwright-report/
           retention-days: 7
           if-no-files-found: ignore
+
+  visual-perf:
+    name: visual + perf (chromium)
+    needs: regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-pw-visual-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright (browsers + deps)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install system deps only (cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      # Gate visual + perf on PRs (previously only the disabled nightly ran these).
+      # Visual fails on snapshot diff (no --update-snapshots).
+      - name: Run visual + performance
+        run: npx playwright test --project=chromium tests/visual tests/performance
+        env:
+          CI: '1'
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME || 'admin' }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD || 'password' }}
+
+      - name: Upload visual/perf debug on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-perf-debug
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
