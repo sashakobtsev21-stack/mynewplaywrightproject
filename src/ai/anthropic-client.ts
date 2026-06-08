@@ -9,8 +9,9 @@ export const aiLogger = childLogger('ai');
 /**
  * Default model. Override with AI_MODEL env if you want to A/B with haiku/opus.
  * Sonnet is the sweet spot for our payloads — accurate enough, ~5-10x cheaper than Opus.
+ * Read through the validated env schema (not raw process.env) so a typo is caught.
  */
-export const MODEL = process.env.AI_MODEL ?? 'claude-sonnet-4-6';
+export const MODEL = env.AI_MODEL;
 
 /** Per-request timeout. Payloads are small; a slow call means trouble, not work. */
 const REQUEST_TIMEOUT_MS = 60_000;
