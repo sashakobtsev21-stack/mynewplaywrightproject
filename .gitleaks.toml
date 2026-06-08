@@ -1,0 +1,20 @@
+# gitleaks configuration — secret scanning for restful-booker-tests.
+#
+# Extends gitleaks' built-in ruleset and allowlists the INTENTIONAL fake/demo
+# credentials used by the test fixtures (the public Restful-Booker demo account
+# at automationintesting.online). These are not real secrets, so the CI scan in
+# .github/workflows/security-scan.yml stays green without ignoring real leaks.
+title = "restful-booker-tests gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures use intentional fake/demo credentials, not real secrets."
+paths = [
+  '''src/fixtures/test-data/.*\.json''',
+  '''tests/performance/api/api-latency\.spec\.ts''',
+]
+regexes = [
+  '''definitely-not-the-password''',
+]
