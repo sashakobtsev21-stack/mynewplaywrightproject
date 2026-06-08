@@ -21,7 +21,10 @@ export class BookingClient extends BaseClient {
   // the fixture inject the worker-scoped admin token so list() works out of the
   // box; mutating endpoints still take an explicit token to keep negative tests
   // (which deliberately call without auth) untouched.
-  constructor(request: APIRequestContext, private readonly token?: string) {
+  constructor(
+    request: APIRequestContext,
+    private readonly token?: string,
+  ) {
     super(request);
   }
 

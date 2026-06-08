@@ -2,11 +2,11 @@
 
 Three workflows under `.github/workflows/`:
 
-| Workflow              | Trigger                                   | Purpose                                |
-| --------------------- | ----------------------------------------- | -------------------------------------- |
-| `tests.yml`           | PR + push to `main` + manual              | Lint → smoke → regression matrix       |
-| `nightly.yml`         | `cron 0 2 * * *` UTC + manual             | Full suite on every project, retains 14d |
-| `publish-allure.yml`  | `workflow_run` of the two above + manual  | Merge artifacts, generate report, deploy to GitHub Pages |
+| Workflow             | Trigger                                  | Purpose                                                  |
+| -------------------- | ---------------------------------------- | -------------------------------------------------------- |
+| `tests.yml`          | PR + push to `main` + manual             | Lint → smoke → regression matrix                         |
+| `nightly.yml`        | `cron 0 2 * * *` UTC + manual            | Full suite on every project, retains 14d                 |
+| `publish-allure.yml` | `workflow_run` of the two above + manual | Merge artifacts, generate report, deploy to GitHub Pages |
 
 ## `tests.yml`
 
@@ -31,13 +31,13 @@ lint  ─────► smoke (chromium) ─────► regression matrix
 
 ### Secrets
 
-| Secret              | Default fallback in workflow |
-| ------------------- | ---------------------------- |
-| `ADMIN_USERNAME`    | `admin`                      |
-| `ADMIN_PASSWORD`    | `password`                   |
+| Secret              | Default fallback in workflow                               |
+| ------------------- | ---------------------------------------------------------- |
+| `ADMIN_USERNAME`    | `admin`                                                    |
+| `ADMIN_PASSWORD`    | `password`                                                 |
 | `ANTHROPIC_API_KEY` | not used in the test workflows; only for ad-hoc AI scripts |
 
-Both ADMIN_* defaults match the public demo, so the workflow is green
+Both ADMIN\_\* defaults match the public demo, so the workflow is green
 out-of-the-box without configuring any secrets.
 
 ## `nightly.yml`
@@ -48,7 +48,7 @@ Same shape as `tests.yml` but with the full project matrix:
 chromium • firefox • webkit • mobile-chrome • mobile-safari • api
 ```
 
-Mobile-* projects run only here — they're slower and visual diffs are noisier
+Mobile-\* projects run only here — they're slower and visual diffs are noisier
 on different viewports, not worth slowing down every PR.
 
 Slack/Telegram notification scaffolding is sitting commented out in the

@@ -11,7 +11,8 @@ export const addDays = (d: Date, days: number): Date => {
   return out;
 };
 
-export const futureDate = (offsetDays: number): string => toIsoDate(addDays(new Date(), offsetDays));
+export const futureDate = (offsetDays: number): string =>
+  toIsoDate(addDays(new Date(), offsetDays));
 
 /** Returns [checkin, checkout] starting `offsetDays` from today, lasting `nights`. */
 export const bookingWindow = (offsetDays = 7, nights = 3): [string, string] => {

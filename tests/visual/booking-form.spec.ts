@@ -9,10 +9,7 @@ test.describe('visual: booking form', () => {
     await expect(page).toHaveScreenshot('booking-form-empty.png', {
       fullPage: false,
       maxDiffPixelRatio: 0.03,
-      mask: [
-        page.locator('img'),
-        page.locator('.room-price, [data-testid="price"]'),
-      ],
+      mask: [page.locator('img'), page.locator('.room-price, [data-testid="price"]')],
     });
   });
 

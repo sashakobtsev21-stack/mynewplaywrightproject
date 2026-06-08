@@ -11,7 +11,9 @@ export class BaseClient {
     if (!res.ok()) {
       const body = await res.text().catch(() => '<no body>');
       log.error({ ctx, status: res.status(), body: body.slice(0, 500) }, 'api call failed');
-      throw new Error(`${ctx} failed: HTTP ${res.status()} ${res.statusText()} :: ${body.slice(0, 200)}`);
+      throw new Error(
+        `${ctx} failed: HTTP ${res.status()} ${res.statusText()} :: ${body.slice(0, 200)}`,
+      );
     }
     return res;
   }

@@ -13,10 +13,10 @@ async function timeIt<T>(fn: () => Promise<T>): Promise<[T, number]> {
 }
 
 test.describe('@perf api latency', () => {
-  test('common GET endpoints respond within budget', async (
-    { bookingClient, roomClient },
-    testInfo,
-  ) => {
+  test('common GET endpoints respond within budget', async ({
+    bookingClient,
+    roomClient,
+  }, testInfo) => {
     const samples: Sample[] = [];
 
     {
