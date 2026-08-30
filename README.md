@@ -282,10 +282,18 @@ docker compose -f docker/docker-compose.yml run --rm tests npm run test:smoke
 
 ### CI/CD
 
-Three workflows under `.github/workflows/`:
+Four workflows under `.github/workflows/`:
 
 - `tests.yml` — lint + typecheck + unit → smoke (chromium) → regression matrix
-  (chromium / firefox / webkit / api). Runs on every PR and push to `main`.
+  (chromium / firefox / webkit / api) → **visual** and **perf**. Runs on every PR
+  and push to `main`. `visual` is a gate; `perf` is not — its budgets are measured
+  against a shared public demo, so a red there means the demo was slow, not that
+  this change regressed. It still runs and publishes samples; only the verdict is
+  advisory.
+- `update-snapshots.yml` — manual only, and asks for a reason. Regenerates the
+  visual baselines on `ubuntu-latest`, the same platform the gate compares against,
+  and commits them. Kept out of the gating job on purpose: a job that writes its own
+  expectation cannot fail.
 - `nightly.yml` — full project matrix incl. mobile, manual trigger (cron is
   commented out: the public demo is flaky at night and was generating noise).
 - `publish-allure.yml` — picks up artifacts from the above on `main`, generates
@@ -573,7 +581,14 @@ faker / локальный вывод.
 
 ### CI/CD
 
-- `tests.yml` — lint + typecheck + unit → smoke (chromium) → regression matrix.
+- `tests.yml` — lint + typecheck + unit → smoke (chromium) → regression matrix →
+  **visual** и **perf**. `visual` — гейт; `perf` — нет: бюджеты меряются против
+  чужого публичного демо, красный там значит «демо тормозило», а не «эта правка
+  ухудшила». Замеры собираются, вердикт совещательный.
+- `update-snapshots.yml` — только вручную и с обязательной причиной. Перегенерирует
+  визуальные эталоны на `ubuntu-latest` — той же платформе, с которой сравнивает
+  гейт, — и коммитит их. В гейт намеренно не входит: джоба, которая переписывает
+  собственный эталон, упасть не может.
 - `nightly.yml` — полный matrix включая mobile, ручной запуск (cron закомментирован).
 - `publish-allure.yml` — собирает отчёт и деплоит на `gh-pages`.
 

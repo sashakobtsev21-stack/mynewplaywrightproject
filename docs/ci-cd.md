@@ -1,22 +1,34 @@
 # CI/CD
 
-Three workflows under `.github/workflows/`:
+Four workflows under `.github/workflows/`:
 
-| Workflow             | Trigger                                  | Purpose                                                  |
-| -------------------- | ---------------------------------------- | -------------------------------------------------------- |
-| `tests.yml`          | PR + push to `main` + manual             | Lint → smoke → regression matrix                         |
-| `nightly.yml`        | `cron 0 2 * * *` UTC + manual            | Full suite on every project, retains 14d                 |
-| `publish-allure.yml` | `workflow_run` of the two above + manual | Merge artifacts, generate report, deploy to GitHub Pages |
+| Workflow               | Trigger                                   | Purpose                                                            |
+| ---------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
+| `tests.yml`            | PR + push to `main` + manual              | Lint → smoke → regression matrix → visual (gate) + perf (advisory) |
+| `nightly.yml`          | `cron 0 2 * * *` UTC + manual             | Full suite on every project, retains 14d                           |
+| `publish-allure.yml`   | `workflow_run` of the above + manual      | Merge artifacts, generate report, deploy to GitHub Pages           |
+| `update-snapshots.yml` | **manual only**, requires a stated reason | Regenerate visual baselines on linux/chromium and commit them      |
 
 ## `tests.yml`
 
 ```
-lint  ─────► smoke (chromium) ─────► regression matrix
-                                      ├─ chromium
-                                      ├─ firefox
-                                      ├─ webkit
+lint  ─────► smoke (chromium) ─────► regression matrix ─┬─► visual (chromium)   ← gate
+                                      ├─ chromium        │
+                                      ├─ firefox         └─► perf (chromium)    ← advisory
+                                      ├─ webkit                continue-on-error
                                       └─ api
 ```
+
+**Why `perf` does not gate.** Its budgets are measured against a shared public demo
+on infrastructure we do not control, so a red result means "the demo was slow today",
+not "this change regressed performance". The job still runs and publishes its samples;
+only the verdict is advisory. Gating on someone else's infrastructure teaches the team
+to ignore red, which costs more than the signal is worth.
+
+**Why `visual` does gate.** A pixel diff against a committed baseline is a real signal
+about our own code — provided the baseline exists for the platform being compared. It
+had not: no `-chromium-linux` snapshots were ever committed, so every run wrote the
+actual image and failed. See `update-snapshots.yml` below.
 
 - `concurrency` group cancels in-flight runs on the same ref. Saves minutes
   on noisy PRs.
@@ -108,7 +120,23 @@ docker compose -f docker/docker-compose.yml run --rm tests npm run test:smoke
 
 - AI helper scripts (`ai:generate-test`, `ai:analyze`). They're for the QA's
   local workflow, not the gate.
-- `test:visual:update`. Visual baselines should be deliberately created by
-  a human, then committed — never overwritten in CI.
+- `test:visual:update` **inside the gating job**. A job that regenerates its own
+  expectation cannot fail, so `visual` never passes `--update-snapshots`.
+  Regeneration is a separate, manually triggered workflow that requires a stated
+  reason — see below. It runs in CI rather than on a developer's machine for a
+  physical reason: a baseline rendered on macOS can never match linux/chromium,
+  so "created by a human locally, then committed" produces a permanently red gate.
+  The deliberateness is preserved by the trigger, not by the location.
 - Performance trending. The JSONL files land in `performance-results/` but
   no dashboard yet (see [Future Improvements](../README.md#future-improvements)).
+
+## `update-snapshots.yml`
+
+Manual only (`workflow_dispatch`), and it asks for a reason that ends up in the commit
+message. It runs the visual specs with `--update-snapshots` on `ubuntu-latest` — the
+same platform the gating job compares against — and commits any changed PNGs back to
+the branch. If the regenerated images are byte-identical it says so and commits nothing.
+
+Use it when a visual change is intentional. Review the image diff in the resulting
+commit exactly as you would review code: that diff is the only thing standing between
+an intended redesign and an unnoticed regression.
