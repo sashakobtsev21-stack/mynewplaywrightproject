@@ -10,6 +10,7 @@ export class AdminLoginPage extends BasePage {
   readonly passwordInput: Locator;
   readonly submitButton: Locator;
   readonly errorMessage: Locator;
+  readonly errorMessages: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -17,7 +18,8 @@ export class AdminLoginPage extends BasePage {
     this.usernameInput = page.getByLabel(/username/i).or(page.locator('#username'));
     this.passwordInput = page.getByLabel(/password/i).or(page.locator('#password'));
     this.submitButton = page.getByRole('button', { name: /login/i });
-    this.errorMessage = page.locator('.alert-danger, [role="alert"]').first();
+    this.errorMessages = page.locator('.alert-danger, [role="alert"]');
+    this.errorMessage = this.errorMessages.first();
   }
 
   // The admin SPA is slow to reach 'load' on the public demo (it was timing out
@@ -47,8 +49,26 @@ export class AdminLoginPage extends BasePage {
     await this.login(env.ADMIN_USERNAME, env.ADMIN_PASSWORD);
   }
 
+  // The demo renders its validation alerts in more than one pass. Measured against
+  // the live page: one alert is visible ~40ms after submit, a second arrives ~300ms
+  // later, and the document grows from 379px to 453px in between. Returning as soon
+  // as the first alert appears therefore hands the caller a page that is still
+  // changing — which is exactly what made the visual test flaky (a 5% pixel drift
+  // that passed only on retry). Wait for the count to stop moving rather than
+  // asserting a hard-coded number, which would break the day the copy changes.
   async expectInvalidCredentials(): Promise<void> {
     await expect(this.errorMessage).toBeVisible();
+    await this.waitForAlertsToSettle();
+  }
+
+  private async waitForAlertsToSettle(): Promise<void> {
+    let previous = -1;
+    await expect(async () => {
+      const current = await this.errorMessages.count();
+      const settled = current > 0 && current === previous;
+      previous = current;
+      expect(settled, `alert count still moving (${current})`).toBe(true);
+    }).toPass({ intervals: [250, 250, 250, 500], timeout: 5_000 });
   }
 
   async expectLoggedIn(): Promise<void> {

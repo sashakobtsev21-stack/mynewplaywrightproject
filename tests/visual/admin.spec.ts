@@ -16,7 +16,9 @@ test.describe('visual: admin', () => {
 
     await expect(page).toHaveScreenshot('admin-login-error.png', {
       maxDiffPixelRatio: 0.03,
-      mask: [adminLoginPage.errorMessage], // error text may differ slightly
+      // Mask every alert, not just the first. The demo renders them in two passes
+      // and masking `.first()` left the second one compared pixel by pixel.
+      mask: [adminLoginPage.errorMessages],
     });
   });
 });
