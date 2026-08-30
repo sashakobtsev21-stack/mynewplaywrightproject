@@ -1,0 +1,1 @@
+{"level":50,"time":1788084917603,"pid":2140,"hostname":"runnervmgx7h7","scope":"api","ctx":"booking.getById(4)","status":404,"body":"","msg":"api call failed"}
