@@ -16,12 +16,21 @@ test.describe('visual: booking form', () => {
   test('filled form layout', async ({ homePage, bookingPage, page }) => {
     await homePage.open();
     await homePage.openFirstRoomBooking();
-    await bookingPage.fillGuestDetails(uiGuestFactory());
+    await bookingPage.fillGuestDetails(
+      uiGuestFactory({
+        firstName: 'Visual',
+        lastName: 'Guest',
+        email: 'visual.guest@example.com',
+        phone: '12345678901',
+      }),
+    );
+    await bookingPage.bookButton.focus();
+    await bookingPage.bookButton.scrollIntoViewIfNeeded();
 
     await expect(page).toHaveScreenshot('booking-form-filled.png', {
       fullPage: false,
       maxDiffPixelRatio: 0.03,
-      mask: [page.locator('img'), page.locator('.room-price')],
+      mask: [page.locator('img'), page.locator('.room-price, [data-testid="price"]')],
     });
   });
 });
