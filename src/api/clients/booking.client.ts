@@ -4,6 +4,7 @@ import { API } from '../../config/constants';
 import { cookieHeader } from '../../utils/api-helpers';
 import type {
   Booking,
+  BookingDates,
   BookingListItem,
   BookingListResponse,
   CreateBookingPayload,
@@ -73,9 +74,34 @@ export class BookingClient extends BaseClient {
   }
 
   async create(payload: CreateBookingPayload): Promise<Booking> {
-    const res = await this.request.post(API.booking, { data: payload });
-    await this.expectOk(res, 'booking.create');
-    return res.json();
+    const maxAttempts = 4;
+    let candidate = payload;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      const res = await this.request.post(API.booking, { data: candidate });
+      if (res.ok()) return res.json();
+
+      if (res.status() !== 409 || attempt === maxAttempts) {
+        await this.expectOk(res, 'booking.create');
+      }
+
+      candidate = {
+        ...candidate,
+        bookingdates: this.shiftDates(payload.bookingdates, attempt * 367),
+      };
+    }
+
+    throw new Error('booking.create failed after retries');
+  }
+
+  private shiftDates(dates: BookingDates, days: number): BookingDates {
+    const shift = (value: string): string => {
+      const date = new Date(`${value}T00:00:00.000Z`);
+      date.setUTCDate(date.getUTCDate() + days);
+      return date.toISOString().slice(0, 10);
+    };
+
+    return { checkin: shift(dates.checkin), checkout: shift(dates.checkout) };
   }
 
   async update(id: number, payload: CreateBookingPayload, token: string): Promise<Booking> {
